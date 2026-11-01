@@ -1,6 +1,6 @@
 extends Node
-# GUI 驱动器：真实窗口里跑一遍「菜单 → 双人对战 → 取胜 → 悔棋 → 重开 → 返回」
-# 截图用引擎自身视口抓取，落盘到 res://tests/shots/
+# GUI 驱动器：真实窗口里用注入的鼠标事件走一遍新界面
+#   菜单 → 人机对战(简单) → 落子 → 打开外观弹窗换主题 → 悔棋 → 返回菜单
 
 const OUT_DIR := "res://tests/shots/"
 
@@ -82,83 +82,64 @@ func run() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	menu = scene.get_node("MainMenu")
-	await shot("01_menu")
 
-	await click_node(menu.get_node("%BtnPVP"))
+	log_line("menu: pvp_visible=%s depth_items=%d" % [
+		str(menu.get_node("%BtnPVP").visible), menu._depth_option.item_count])
+	await shot("g1_menu")
+
+	# 人机对战 · 我执黑 → 简单
+	await click_node(menu.get_node("%BtnPVEBlack"))
+	await get_tree().process_frame
+	await click_node(menu.get_node("%BtnEasy"))
 	await get_tree().process_frame
 	board = menu._board
-	log_line("PVP board=%s mode=%d" % [str(board != null), -1 if board == null else board.mode])
-	await shot("02_board")
+	log_line("board created=%s mode=%d" % [str(board != null), -1 if board == null else board.mode])
+	if board == null:
+		return
+	await shot("g2_board")
 
-	# 悬停预览
-	var canvas: Control = board.get_node("%Canvas")
-	await move_to(canvas.global_position + canvas.cell_center(Vector2i(6, 6)))
-	log_line("hover=%s" % str(canvas.hover))
-	await shot("03_hover")
-
-	# 黑方五连：黑(3,7)(4,7)(5,7)(6,7)(7,7)；白(0,0)(0,1)(0,2)(0,3)
-	var seq := [Vector2i(3, 7), Vector2i(0, 0), Vector2i(4, 7), Vector2i(0, 1),
-		Vector2i(5, 7), Vector2i(0, 2), Vector2i(6, 7), Vector2i(0, 3)]
-	for c in seq:
-		await click_cell(c.x, c.y)
-	log_line("before win: stones=%d state=%d" % [board.core.move_count(), board.core.state])
-	await shot("04_midgame")
+	# 真实点击落子
 	await click_cell(7, 7)
-	log_line("after win: stones=%d state=%d win_line=%d panel=%s" % [
-		board.core.move_count(), board.core.state, board.core.win_line.size(),
-		str(board.get_node("%Result").visible)])
-	await shot("05_win")
-
-	# 结果面板上的悔棋
-	await click_node(board.get_node("%ResultUndoButton"))
 	await get_tree().process_frame
-	log_line("after undo: stones=%d state=%d panel=%s" % [
-		board.core.move_count(), board.core.state, str(board.get_node("%Result").visible)])
-	await shot("06_after_undo")
+	log_line("after click: stones=%d" % board.core.move_count())
 
-	# 重新开始
-	await click_node(board.get_node("%RestartButton"))
+	# 等 AI 应答
+	var guard := 0
+	while board.core.move_count() < 2 and guard < 60:
+		guard += 1
+		await get_tree().create_timer(0.1).timeout
+	log_line("after ai: stones=%d depth_label=%s" % [board.core.move_count(), board._depth_label.text])
+	await shot("g3_playing")
+
+	# 侧栏「外观主题」→ 弹窗 → 点第二行换主题
+	await click_node(board.get_node("%ThemeButton"))
 	await get_tree().process_frame
-	log_line("after restart: stones=%d" % board.core.move_count())
-	await shot("07_restart")
+	var picker: Control = board.get_node("%ThemePicker")
+	log_line("picker visible=%s rows=%d" % [str(picker.visible), picker.row_count()])
+	await shot("g4_picker")
+
+	var rows: VBoxContainer = picker._list
+	var row2: Control = rows.get_child(1)
+	var rr := row2.get_global_rect()
+	var before := Ui.current_id
+	await click_at(rr.position + rr.size * 0.5)
+	await get_tree().process_frame
+	log_line("theme %s -> %s" % [before, Ui.current_id])
+	await shot("g5_theme_switched")
+
+	await click_node(picker.get_node("%CloseButton"))
+	await get_tree().process_frame
+	log_line("picker closed=%s" % str(not picker.visible))
+
+	# 悔棋
+	var before_undo: int = board.core.move_count()
+	await click_node(board.get_node("%UndoButton"))
+	await get_tree().process_frame
+	log_line("undo: %d -> %d" % [before_undo, board.core.move_count()])
 
 	# 返回菜单
 	await click_node(board.get_node("%BackButton"))
 	await get_tree().process_frame
-	log_line("after back: board=%s menu_visible=%s" % [
+	log_line("back: board=%s menu_visible=%s" % [
 		str(menu._board == null), str(menu._menu_box.visible)])
-	await shot("08_back_to_menu")
-
-	# 难度面板
-	await click_node(menu.get_node("%BtnPVEBlack"))
-	await get_tree().process_frame
-	log_line("difficulty visible=%s" % str(menu._difficulty.visible))
-	await shot("09_difficulty")
-	await click_node(menu.get_node("%BtnBackToMenu"))
-	await get_tree().process_frame
-
-	# 窗口缩放：大窗 + 小窗
-	await click_node(menu.get_node("%BtnPVP"))
-	await get_tree().process_frame
-	board = menu._board
-	for c in [Vector2i(7, 7), Vector2i(8, 8), Vector2i(6, 6)]:
-		await click_cell(c.x, c.y)
-
-	get_window().size = Vector2i(1280, 820)
-	await get_tree().process_frame
-	await get_tree().process_frame
-	canvas = board.get_node("%Canvas")
-	log_line("resize big: window=%s viewport=%s canvas=%s cell=%s" % [
-		str(get_window().size), str(get_viewport().get_visible_rect().size),
-		str(canvas.size), str(Vector2(canvas.size) / 14.0)])
-	await shot("10_big_window")
-
-	get_window().size = Vector2i(760, 620)
-	await get_tree().process_frame
-	await get_tree().process_frame
-	log_line("resize small: window=%s viewport=%s canvas=%s" % [
-		str(get_window().size), str(get_viewport().get_visible_rect().size), str(canvas.size)])
-	await shot("11_small_window")
-
-	get_window().size = Vector2i(960, 740)
-	await get_tree().process_frame
+	await shot("g6_back_to_menu")

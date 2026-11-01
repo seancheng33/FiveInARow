@@ -25,6 +25,10 @@ var _stop := false
 var _nodes := 0
 var _lines: Array = []
 
+# 诊断用：最近一次实际完成的搜索层数与节点数（界面/测试可读）
+var last_depth := 0
+var last_nodes := 0
+
 
 func _init() -> void:
 	super()
@@ -40,6 +44,8 @@ func get_next_move(board_state: Array, player_type: int) -> Vector2i:
 	_deadline = Time.get_ticks_msec() + time_budget_ms
 	_stop = false
 	_nodes = 0
+	last_depth = 0
+	last_nodes = 0
 	if _lines.is_empty() or _lines[0].size() != _size:
 		_build_lines(_size)
 
@@ -95,7 +101,9 @@ func get_next_move(board_state: Array, player_type: int) -> Vector2i:
 			break
 		if not layer_moves.is_empty():
 			best = pick_tied(layer_moves)
+			last_depth = depth
 		depth += 1
+	last_nodes = _nodes
 
 	return best
 

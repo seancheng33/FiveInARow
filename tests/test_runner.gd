@@ -364,7 +364,16 @@ func run_flow() -> void:
 	check("主菜单已加载", menu != null)
 	check("难度面板初始隐藏", menu._difficulty.visible == false)
 	check("菜单可见", menu._menu_box.visible == true)
-	check_eq("菜单有 5 个主题圆点", menu._dots.get_child_count(), 5)
+	check("双人对战入口已隐藏", menu.get_node("%BtnPVP").visible == false)
+	check_eq("层数下拉 4 档", menu._depth_option.item_count, 4)
+	check("外观弹窗默认关闭", menu._picker.visible == false)
+	menu._open_theme_picker()
+	await get_tree().process_frame
+	check("点外观弹出主题框", menu._picker.visible == true)
+	check_eq("弹窗内 5 个主题", menu._picker.row_count(), 5)
+	menu._picker.close()
+	await get_tree().process_frame
+	check("关闭后弹窗隐藏", menu._picker.visible == false)
 
 	menu._start_game(0, 0, false)
 	await get_tree().process_frame
@@ -431,6 +440,35 @@ func run_flow() -> void:
 	check("AI 观战能自动连下多手", board.core.move_count() >= 4, "手数 %d" % board.core.move_count())
 	check("观战模式人类点击无效", board.can_human_play() == false)
 
+	print("[17c] 计时与 AI 深度")
+	menu._start_game(1, 0, false)
+	await get_tree().process_frame
+	board = menu._board
+	board.min_think_ms = 0
+	check("开局未走子时用时为 00:00", board.elapsed_text() == "00:00")
+	board._on_cell_clicked(Vector2i(7, 7))
+	await get_tree().create_timer(1.15).timeout
+	check("走子后计时器开始走", board._elapsed_ms >= 1000, "elapsed=%d" % board._elapsed_ms)
+	check("用时标签已更新", board._time_label.text != "00:00", board._time_label.text)
+	check("手数标签同步", board._move_label.text == "%d 手" % board.core.move_count(), board._move_label.text)
+
+	# 困难档：跑一步，看 AI 实际层数回填
+	menu._start_game(1, 2, false)
+	await get_tree().process_frame
+	board = menu._board
+	board.search_depth = 2
+	board.ai_time_budget_ms = 150
+	board.configure(1, 2, false)      # 按新层数重建 AI
+	await get_tree().process_frame
+	board.min_think_ms = 0
+	board._on_cell_clicked(Vector2i(7, 7))
+	var gd := 0
+	while board.core.move_count() < 2 and gd < 500:
+		gd += 1
+		await get_tree().process_frame
+	check("困难档侧栏显示实际层数", board._depth_label.text.contains("层"), board._depth_label.text)
+	check_eq("层数为 2", board._last_ai_depth, 2)
+
 	print("[18] 结束面板与返回菜单")
 	menu._start_game(0, 0, false)
 	await get_tree().process_frame
@@ -442,6 +480,7 @@ func run_flow() -> void:
 	check_eq("五连后判定黑胜", board.core.state, GameCore.State.BLACK_WIN)
 	check("结果面板弹出", board._result.visible == true)
 	check("结果标题非空", board._result_title.text != "")
+	check("结果详情含用时", board._result_detail.text.contains("用时"), board._result_detail.text)
 	var n_before: int = board.core.move_count()
 	board._on_cell_clicked(Vector2i(10, 10))
 	check_eq("结束后拒绝落子", board.core.move_count(), n_before)

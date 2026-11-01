@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
+[ext_resource type="PackedScene" path="res://scenes/theme_picker.tscn" id="2_picker"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -54,6 +55,7 @@ layout_mode = 2
 
 [node name="BtnPVP" type="Button" parent="MenuBox/Box"]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(300, 50)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -84,41 +86,28 @@ text = "AI 对战（观战）"
 custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
 
-[node name="BtnQuit" type="Button" parent="MenuBox/Box"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 46)
+[node name="BottomRow" type="HBoxContainer" parent="MenuBox/Box"]
 layout_mode = 2
-size_flags_horizontal = 4
-text = "退出游戏"
-
-[node name="ThemeRow" type="HBoxContainer" parent="MenuBox/Box"]
-layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 10
 alignment = 1
 
-[node name="ThemeLabel" type="Label" parent="MenuBox/Box/ThemeRow"]
-layout_mode = 2
-theme_type_variation = &"MutedLabel"
-theme_override_font_sizes/font_size = 13
-text = "外观"
-
-[node name="ThemeDots" type="HBoxContainer" parent="MenuBox/Box/ThemeRow"]
+[node name="BtnTheme" type="Button" parent="MenuBox/Box/BottomRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(145, 44)
 layout_mode = 2
-theme_override_constants/separation = 6
+text = "外观主题"
 
-[node name="ThemeName" type="Label" parent="MenuBox/Box/ThemeRow"]
+[node name="BtnQuit" type="Button" parent="MenuBox/Box/BottomRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(145, 44)
 layout_mode = 2
-theme_type_variation = &"MutedLabel"
-theme_override_font_sizes/font_size = 13
-text = "樱雾"
+text = "退出游戏"
 
 [node name="Version" type="Label" parent="MenuBox/Box"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 13
-text = "v2.0 · R 重开 / U 悔棋 / Esc 返回"
+text = "v2.1 · Godot 4.2 · 单机人机对战"
 horizontal_alignment = 1
 
 [node name="Difficulty" type="Control" parent="."]
@@ -191,21 +180,25 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_colors/font_color = Color(0.66, 0.72, 0.79, 1)
 theme_override_font_sizes/font_size = 15
-text = "困难档搜索深度"
+text = "困难档搜索层数"
 
 [node name="DepthSpacer" type="Control" parent="Difficulty/Center/Card/Box/DepthRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="DepthSpin" type="SpinBox" parent="Difficulty/Center/Card/Box/DepthRow"]
+[node name="DepthOption" type="OptionButton" parent="Difficulty/Center/Card/Box/DepthRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(190, 40)
 layout_mode = 2
-min_value = 1.0
-max_value = 5.0
-value = 4.0
+fit_to_longest_item = false
 
 [node name="BtnBackToMenu" type="Button" parent="Difficulty/Center/Card/Box"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 text = "返回"
+
+[node name="ThemePicker" parent="." instance=ExtResource("2_picker")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1

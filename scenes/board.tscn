@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/board.gd" id="1_board"]
 [ext_resource type="Script" path="res://scripts/board_canvas.gd" id="2_canvas"]
+[ext_resource type="PackedScene" path="res://scenes/theme_picker.tscn" id="3_picker"]
 
 [node name="Board" type="Control"]
 layout_mode = 3
@@ -30,55 +31,22 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
 
-[node name="Layout" type="VBoxContainer" parent="Margin"]
+[node name="Row" type="HBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 16
 
-[node name="TopBar" type="HBoxContainer" parent="Margin/Layout"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="ModeLabel" type="Label" parent="Margin/Layout/TopBar"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"MutedLabel"
-theme_override_font_sizes/font_size = 17
-text = "双人对战"
-
-[node name="SpacerA" type="Control" parent="Margin/Layout/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="StatusChip" type="PanelContainer" parent="Margin/Layout/TopBar"]
-layout_mode = 2
-theme_type_variation = &"StatusChip"
-
-[node name="StatusLabel" type="Label" parent="Margin/Layout/TopBar/StatusChip"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "轮到黑方"
-
-[node name="SpacerB" type="Control" parent="Margin/Layout/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="BackButton" type="Button" parent="Margin/Layout/TopBar"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "返回菜单"
-
-[node name="BoardHost" type="Control" parent="Margin/Layout"]
+[node name="BoardHost" type="Control" parent="Margin/Row"]
 clip_contents = true
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Canvas" type="Control" parent="Margin/Layout/BoardHost"]
+[node name="Canvas" type="Control" parent="Margin/Row/BoardHost"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -88,32 +56,134 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_canvas")
 
-[node name="BottomBar" type="HBoxContainer" parent="Margin/Layout"]
+[node name="Side" type="VBoxContainer" parent="Margin/Row"]
+custom_minimum_size = Vector2(276, 0)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="UndoButton" type="Button" parent="Margin/Layout/BottomBar"]
-unique_name_in_owner = true
+[node name="InfoCard" type="PanelContainer" parent="Margin/Row/Side"]
 layout_mode = 2
-text = "悔棋 (U)"
 
-[node name="RestartButton" type="Button" parent="Margin/Layout/BottomBar"]
-unique_name_in_owner = true
+[node name="VBox" type="VBoxContainer" parent="Margin/Row/Side/InfoCard"]
 layout_mode = 2
-text = "重新开始 (R)"
+theme_override_constants/separation = 10
 
-[node name="SpacerC" type="Control" parent="Margin/Layout/BottomBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="HintLabel" type="Label" parent="Margin/Layout/BottomBar"]
+[node name="ModeLabel" type="Label" parent="Margin/Row/Side/InfoCard/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-theme_override_font_sizes/font_size = 14
-text = "R 重开 · U 悔棋 · Esc 返回菜单"
+theme_override_font_sizes/font_size = 13
+text = "人机对战"
+autowrap_mode = 2
 
-[node name="Result" type="Control" parent="Margin/Layout/BoardHost"]
+[node name="StatusChip" type="PanelContainer" parent="Margin/Row/Side/InfoCard/VBox"]
+layout_mode = 2
+theme_type_variation = &"StatusChip"
+
+[node name="StatusLabel" type="Label" parent="Margin/Row/Side/InfoCard/VBox/StatusChip"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "轮到你"
+horizontal_alignment = 1
+
+[node name="Sep" type="HSeparator" parent="Margin/Row/Side/InfoCard/VBox"]
+layout_mode = 2
+
+[node name="TimeRow" type="HBoxContainer" parent="Margin/Row/Side/InfoCard/VBox"]
+layout_mode = 2
+
+[node name="K" type="Label" parent="Margin/Row/Side/InfoCard/VBox/TimeRow"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 13
+text = "用时"
+
+[node name="Spacer" type="Control" parent="Margin/Row/Side/InfoCard/VBox/TimeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TimeLabel" type="Label" parent="Margin/Row/Side/InfoCard/VBox/TimeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "00:00"
+
+[node name="MoveRow" type="HBoxContainer" parent="Margin/Row/Side/InfoCard/VBox"]
+layout_mode = 2
+
+[node name="K" type="Label" parent="Margin/Row/Side/InfoCard/VBox/MoveRow"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 13
+text = "手数"
+
+[node name="Spacer" type="Control" parent="Margin/Row/Side/InfoCard/VBox/MoveRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MoveLabel" type="Label" parent="Margin/Row/Side/InfoCard/VBox/MoveRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "0"
+
+[node name="DepthRow" type="HBoxContainer" parent="Margin/Row/Side/InfoCard/VBox"]
+layout_mode = 2
+
+[node name="K" type="Label" parent="Margin/Row/Side/InfoCard/VBox/DepthRow"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 13
+text = "AI 深度"
+
+[node name="Spacer" type="Control" parent="Margin/Row/Side/InfoCard/VBox/DepthRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DepthLabel" type="Label" parent="Margin/Row/Side/InfoCard/VBox/DepthRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "—"
+
+[node name="Spacer2" type="Control" parent="Margin/Row/Side"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="UndoButton" type="Button" parent="Margin/Row/Side"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "悔棋（U）"
+
+[node name="RestartButton" type="Button" parent="Margin/Row/Side"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "重新开始（R）"
+
+[node name="ThemeButton" type="Button" parent="Margin/Row/Side"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "外观主题"
+
+[node name="BackButton" type="Button" parent="Margin/Row/Side"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "返回菜单（Esc）"
+
+[node name="HintLabel" type="Label" parent="Margin/Row/Side"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 12
+text = "点棋盘落子。R 重开、U 悔棋、Esc 返回菜单。"
+autowrap_mode = 2
+
+[node name="Result" type="Control" parent="."]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -123,7 +193,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Dim" type="ColorRect" parent="Margin/Layout/BoardHost/Result"]
+[node name="Dim" type="ColorRect" parent="Result"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -133,35 +203,35 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.16, 0.1, 0.12, 0.3)
 
-[node name="Holder" type="MarginContainer" parent="Margin/Layout/BoardHost/Result"]
+[node name="Holder" type="MarginContainer" parent="Result"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 18
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 36
 
-[node name="VBox" type="VBoxContainer" parent="Margin/Layout/BoardHost/Result/Holder"]
+[node name="VBox" type="VBoxContainer" parent="Result/Holder"]
 layout_mode = 2
 alignment = 2
 
-[node name="Row" type="HBoxContainer" parent="Margin/Layout/BoardHost/Result/Holder/VBox"]
+[node name="Row" type="HBoxContainer" parent="Result/Holder/VBox"]
 layout_mode = 2
 alignment = 1
 
-[node name="Card" type="PanelContainer" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row"]
-custom_minimum_size = Vector2(420, 0)
+[node name="Card" type="PanelContainer" parent="Result/Holder/VBox/Row"]
+custom_minimum_size = Vector2(440, 0)
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card"]
+[node name="VBox" type="VBoxContainer" parent="Result/Holder/VBox/Row/Card"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ResultTitle" type="Label" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
+[node name="ResultTitle" type="Label" parent="Result/Holder/VBox/Row/Card/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"AccentLabel"
@@ -169,30 +239,40 @@ theme_override_font_sizes/font_size = 30
 text = "黑方获胜"
 horizontal_alignment = 1
 
-[node name="ResultDetail" type="Label" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
+[node name="ResultDetail" type="Label" parent="Result/Holder/VBox/Row/Card/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-theme_override_font_sizes/font_size = 16
-text = "共 0 手"
+theme_override_font_sizes/font_size = 15
+text = "共 0 手 · 用时 00:00"
 horizontal_alignment = 1
 
-[node name="Buttons" type="HBoxContainer" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
+[node name="Buttons" type="HBoxContainer" parent="Result/Holder/VBox/Row/Card/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="AgainButton" type="Button" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox/Buttons"]
+[node name="AgainButton" type="Button" parent="Result/Holder/VBox/Row/Card/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "再来一局"
 
-[node name="ResultUndoButton" type="Button" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox/Buttons"]
+[node name="ResultUndoButton" type="Button" parent="Result/Holder/VBox/Row/Card/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "悔棋"
 
-[node name="ResultBackButton" type="Button" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox/Buttons"]
+[node name="ResultThemeButton" type="Button" parent="Result/Holder/VBox/Row/Card/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "外观"
+
+[node name="ResultBackButton" type="Button" parent="Result/Holder/VBox/Row/Card/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "返回菜单"
+
+[node name="ThemePicker" parent="." instance=ExtResource("3_picker")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1

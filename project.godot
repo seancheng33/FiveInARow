@@ -21,7 +21,7 @@ Ui="*res://scripts/ui_skin.gd"
 
 [display]
 
-window/size/viewport_width=960
-window/size/viewport_height=740
+window/size/viewport_width=1160
+window/size/viewport_height=760
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"

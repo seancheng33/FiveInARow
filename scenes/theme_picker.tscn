@@ -1,0 +1,73 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/theme_picker.gd" id="1_tp"]
+
+[node name="ThemePicker" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_tp")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.05, 0.03, 0.04, 0.5)
+
+[node name="Holder" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="Holder"]
+layout_mode = 2
+alignment = 1
+
+[node name="Row" type="HBoxContainer" parent="Holder/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="Card" type="PanelContainer" parent="Holder/VBox/Row"]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Holder/VBox/Row/Card"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Holder/VBox/Row/Card/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "外观主题"
+horizontal_alignment = 1
+
+[node name="Sep" type="HSeparator" parent="Holder/VBox/Row/Card/VBox"]
+layout_mode = 2
+
+[node name="List" type="VBoxContainer" parent="Holder/VBox/Row/Card/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Gap" type="Control" parent="Holder/VBox/Row/Card/VBox"]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="Holder/VBox/Row/Card/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "关闭"
