@@ -1,0 +1,186 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="Bg" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.105, 0.122, 0.145, 1)
+
+[node name="MenuBox" type="CenterContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Box" type="VBoxContainer" parent="MenuBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="MenuBox/Box"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 52
+text = "五子棋"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="MenuBox/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.62, 0.7, 1)
+theme_override_font_sizes/font_size = 15
+text = "GOMOKU · 单机对战"
+horizontal_alignment = 1
+
+[node name="Gap1" type="Control" parent="MenuBox/Box"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+
+[node name="BtnPVP" type="Button" parent="MenuBox/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "双人对战"
+
+[node name="BtnPVEBlack" type="Button" parent="MenuBox/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "人机对战 · 我执黑先手"
+
+[node name="BtnPVEWhite" type="Button" parent="MenuBox/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "人机对战 · AI 执黑先手"
+
+[node name="BtnEVE" type="Button" parent="MenuBox/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "AI 对战（观战）"
+
+[node name="Gap2" type="Control" parent="MenuBox/Box"]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+
+[node name="BtnQuit" type="Button" parent="MenuBox/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 46)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "退出游戏"
+
+[node name="Version" type="Label" parent="MenuBox/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.45, 0.52, 1)
+theme_override_font_sizes/font_size = 13
+text = "v2.0 · R 重开 / U 悔棋 / Esc 返回"
+horizontal_alignment = 1
+
+[node name="Difficulty" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="Difficulty"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="Center" type="CenterContainer" parent="Difficulty"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Card" type="PanelContainer" parent="Difficulty/Center"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+
+[node name="Box" type="VBoxContainer" parent="Difficulty/Center/Card"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DiffTitle" type="Label" parent="Difficulty/Center/Card/Box"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "选择 AI 难度"
+horizontal_alignment = 1
+
+[node name="BtnEasy" type="Button" parent="Difficulty/Center/Card/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "简单 · 随机乱下"
+
+[node name="BtnNormal" type="Button" parent="Difficulty/Center/Card/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "普通 · 会堵五连"
+
+[node name="BtnHard" type="Button" parent="Difficulty/Center/Card/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "困难 · 会算后手"
+
+[node name="Sep" type="HSeparator" parent="Difficulty/Center/Card/Box"]
+layout_mode = 2
+
+[node name="DepthRow" type="HBoxContainer" parent="Difficulty/Center/Card/Box"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DepthLabel" type="Label" parent="Difficulty/Center/Card/Box/DepthRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.72, 0.79, 1)
+theme_override_font_sizes/font_size = 15
+text = "困难档搜索深度"
+
+[node name="DepthSpacer" type="Control" parent="Difficulty/Center/Card/Box/DepthRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DepthSpin" type="SpinBox" parent="Difficulty/Center/Card/Box/DepthRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 5.0
+value = 4.0
+
+[node name="BtnBackToMenu" type="Button" parent="Difficulty/Center/Card/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "返回"

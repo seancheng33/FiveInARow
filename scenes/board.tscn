@@ -1,0 +1,189 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/board.gd" id="1_board"]
+[ext_resource type="Script" path="res://scripts/board_canvas.gd" id="2_canvas"]
+
+[node name="Board" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_board")
+
+[node name="Bg" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.105, 0.122, 0.145, 1)
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 12
+
+[node name="Layout" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TopBar" type="HBoxContainer" parent="Margin/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ModeLabel" type="Label" parent="Margin/Layout/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.76, 0.87, 1)
+theme_override_font_sizes/font_size = 17
+text = "双人对战"
+
+[node name="SpacerA" type="Control" parent="Margin/Layout/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusLabel" type="Label" parent="Margin/Layout/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "轮到黑方"
+
+[node name="SpacerB" type="Control" parent="Margin/Layout/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackButton" type="Button" parent="Margin/Layout/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "返回菜单"
+
+[node name="BoardHost" type="Control" parent="Margin/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Canvas" type="Control" parent="Margin/Layout/BoardHost"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_canvas")
+
+[node name="BottomBar" type="HBoxContainer" parent="Margin/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="UndoButton" type="Button" parent="Margin/Layout/BottomBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "悔棋 (U)"
+
+[node name="RestartButton" type="Button" parent="Margin/Layout/BottomBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "重新开始 (R)"
+
+[node name="SpacerC" type="Control" parent="Margin/Layout/BottomBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HintLabel" type="Label" parent="Margin/Layout/BottomBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.6, 0.67, 1)
+theme_override_font_sizes/font_size = 14
+text = "R 重开 · U 悔棋 · Esc 返回菜单"
+
+[node name="Result" type="Control" parent="Margin/Layout/BoardHost"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="Margin/Layout/BoardHost/Result"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.07, 0.42)
+
+[node name="Holder" type="MarginContainer" parent="Margin/Layout/BoardHost/Result"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="Margin/Layout/BoardHost/Result/Holder"]
+layout_mode = 2
+alignment = 2
+
+[node name="Row" type="HBoxContainer" parent="Margin/Layout/BoardHost/Result/Holder/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="Card" type="PanelContainer" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ResultTitle" type="Label" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "黑方获胜"
+horizontal_alignment = 1
+
+[node name="ResultDetail" type="Label" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.72, 0.79, 1)
+theme_override_font_sizes/font_size = 16
+text = "共 0 手"
+horizontal_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="AgainButton" type="Button" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "再来一局"
+
+[node name="ResultUndoButton" type="Button" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "悔棋"
+
+[node name="ResultBackButton" type="Button" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "返回菜单"
