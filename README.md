@@ -174,6 +174,73 @@ Veil (ColorRect)   一层主题色薄膜，保证文字永远读得清
   导致搜索里模拟的对手比真实对手弱，深度越深反而越容易被反杀；
 - 叶子评估把棋盘预先切成 88 条直线，单遍扫描计分。
 
+## 导出与分发
+
+### 前置：导出模板
+
+模板放在 `%APPDATA%\Godot\export_templates\4.2.2.stable\`，四个文件：
+
+```
+windows_debug_x86_64.exe      Windows 调试
+windows_release_x86_64.exe    Windows 发布
+web_debug.zip                 Web 调试
+web_release.zip               Web 发布
+```
+
+目录名必须是 `4.2.2.stable`（版本号 + 状态），否则编辑器找不到。
+
+### Windows
+
+```bash
+godot --headless --path . --export-release "Windows Desktop" \
+  "E:/godot/GomokuFiveInARow/dist/gomokufive.exe"
+```
+
+**输出路径要写绝对路径**。写相对路径（`dist/gomokufive.exe`）时，Godot 传给 rcedit 的也是
+相对路径，rcedit 找不到文件 → 报 `Could not create child process: rcedit` →
+随后 `无法以读写模式打开 gomokufive.tmp` → 导出失败。
+
+写图标和版本信息要用 **rcedit**，它是外部程序，需要在编辑器设置里填路径：
+
+```
+编辑器设置 → 导出 → Windows → Rcedit
+或直接改 %APPDATA%\Godot\editor_settings-4.tres：
+export/windows/rcedit = "D:/program files/Godot_v3.5.2/rcedit-x64.exe"
+```
+
+没配 rcedit 也能导出成功，但 exe 会是 Godot 默认图标、没有版本信息。
+配好之后验证：`(Get-Item dist/gomokufive.exe).VersionInfo` 应能看到产品名与 0.9.0.0。
+
+### Web
+
+```bash
+godot --headless --path . --export-release "Web" "dist/web/index.html"
+```
+
+产物 9 个文件：`index.html` / `index.js` / `index.wasm` / `index.pck` / `index.worker.js` /
+`index.audio.worklet.js` / 三个图标 PNG。
+
+**部署时必须让服务器发这两个头**，否则游戏停在
+「The following features required to run Godot projects on the Web are missing」：
+
+```
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+```
+
+原因：Godot **4.2** 的 Web 模板只有线程构建，wasm 里直接引用 `SharedArrayBuffer`，
+而浏览器只在「跨源隔离」页面上放开它。导出预设里的 `variant/thread_support=false`
+在 4.2 不起作用（4.3 之后才有真正的无线程模板）。
+
+`python -m http.server` 不带这两个头，**不能**用来测 Web 版。用项目里的脚本：
+
+```bash
+python tools/serve_web.py            # 默认 dist/web，端口 8060
+python tools/serve_web.py --port 9000
+```
+
+然后浏览器打开 http://127.0.0.1:8060/ 。
+
 ## 测试
 
 测试全部在 `tests/` 下，不参与导出。
@@ -208,7 +275,8 @@ godot --headless --path . res://tests/ai_debug.tscn
 
 | 项 | 状态 | 说明 |
 |---|---|---|
-| 可执行文件 | ⚠️ 未产出 | 本机没装 Godot 4.2.2 导出模板（`%APPDATA%\Godot\export_templates` 为空），需要补装后 `--export-release` |
+| Windows 可执行文件 | ✅ 已产出 | `dist/gomokufive.exe`（71 MB，pck 已内嵌成单文件）；图标 7 个尺寸、版本 0.9.0.0 均已写入 |
+| Web 版 | ✅ 已产出 | `dist/web/`（41 MB，其中 wasm 35.7 MB）；部署端**必须**发 COOP/COEP 头，见下 |
 | 应用图标 | ✅ 已补 | `icon.png`（窗口）+ `icon.ico`（7 档尺寸，打进 exe） |
 | 版本信息 | ✅ 已补 | `project.godot` 的 `config/version` + 导出预设的 file/product version |
 | 第三方许可 | ✅ 已补 | `THIRD-PARTY-NOTICES.md` + `assets/fonts/OFL.txt`（行书字体为 SIL OFL 1.1） |
