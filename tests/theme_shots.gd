@@ -86,6 +86,18 @@ func run() -> void:
 		await get_tree().process_frame
 		await shot("m_result_%s" % id)
 
+		# 只给第一套补拍「负」「平」，用来核对大字与配色
+		if id == "a_sakura":
+			board.ai_is_black = true                 # 玩家执白
+			board.core.state = GameCore.State.BLACK_WIN
+			board._show_result()
+			await get_tree().process_frame
+			await shot("m_result_lose")
+			board.core.state = GameCore.State.DRAW
+			board._show_result()
+			await get_tree().process_frame
+			await shot("m_result_draw")
+
 
 func _build_win(board) -> void:
 	board._stop_ai()

@@ -22,6 +22,7 @@ const AI_MIN_THINK_MS := 360
 @onready var _hint: Label = %HintLabel
 @onready var _result: Control = %Result
 @onready var _dim: ColorRect = %Dim
+@onready var _big_char: Label = %BigChar
 @onready var _result_title: Label = %ResultTitle
 @onready var _result_detail: Label = %ResultDetail
 @onready var _again_btn: Button = %AgainButton
@@ -62,6 +63,7 @@ func _ready() -> void:
 	Ui.changed.connect(_on_skin_changed)
 	_on_skin_changed()
 	_canvas.set_core(core)
+	_canvas.resized.connect(_update_big_char_font)
 	_canvas.cell_clicked.connect(_on_cell_clicked)
 	_canvas.cell_hovered.connect(_on_cell_hovered)
 	_undo_btn.pressed.connect(_on_undo)
@@ -72,7 +74,7 @@ func _ready() -> void:
 	_result_undo_btn.pressed.connect(_on_undo)
 	_result_theme_btn.pressed.connect(_open_theme_picker)
 	_result_back_btn.pressed.connect(_on_back)
-	_result.visible = false
+	_set_result_visible(false)
 	_apply_setup()
 
 
@@ -81,6 +83,8 @@ func _on_skin_changed() -> void:
 	_bg.texture = Ui.bg_texture()
 	if is_instance_valid(_dim):
 		_dim.color = Ui.color("scrim")
+	if is_instance_valid(_big_char) and _big_char.text != "":
+		_big_char.add_theme_color_override("font_color", _big_char_color())
 
 
 # 主菜单在 add_child 之前调用；若已经在场景树里则立即生效
@@ -108,7 +112,7 @@ func _apply_setup() -> void:
 	core.reset()
 	_reset_clock()
 	_last_ai_depth = 0
-	_result.visible = false
+	_set_result_visible(false)
 	_canvas.queue_redraw()
 	_update_ui()
 	_maybe_start_ai()
@@ -320,7 +324,7 @@ func _stop_ai() -> void:
 
 func _on_undo() -> void:
 	_stop_ai()
-	_result.visible = false
+	_set_result_visible(false)
 	if not core.undo():
 		_update_ui()
 		return
@@ -338,7 +342,7 @@ func _on_restart() -> void:
 	core.reset()
 	_reset_clock()
 	_last_ai_depth = 0
-	_result.visible = false
+	_set_result_visible(false)
 	_canvas.queue_redraw()
 	_update_ui()
 	_maybe_start_ai()
@@ -405,6 +409,45 @@ func _status_text() -> String:
 	return "轮到你（%s）" % ("黑" if core.turn == GameCore.BLACK else "白")
 
 
+func _set_result_visible(v: bool) -> void:
+	_result.visible = v
+	if is_instance_valid(_dim):
+		_dim.visible = v
+	if is_instance_valid(_big_char):
+		_big_char.visible = v and _big_char.text != ""
+
+
+# 结算大字：从玩家角度给一个字。观战/双人没有"我方"，用"胜"表示有人赢了
+func _big_char_text() -> String:
+	if core.state == GameCore.State.DRAW:
+		return "平"
+	if core.state != GameCore.State.BLACK_WIN and core.state != GameCore.State.WHITE_WIN:
+		return ""
+	if mode != Mode.PVE:
+		return "胜"
+	var winner := GameCore.BLACK if core.state == GameCore.State.BLACK_WIN else GameCore.WHITE
+	return "胜" if winner == human_color() else "负"
+
+
+func _big_char_color() -> Color:
+	match _big_char.text:
+		"胜":
+			return Ui.color("accent")
+		"负":
+			return Ui.color("muted")
+	return Ui.color("text")
+
+
+# 字号按格算：行书字形在 em 方框里偏小（约占 0.67），9.2 格字号 → 字面约 6.2 格高、7 格宽，正好卡在要求内
+func _update_big_char_font() -> void:
+	if not is_instance_valid(_big_char):
+		return
+	var c: float = _canvas.cell_size()
+	if c <= 1.0:
+		c = 40.0
+	_big_char.add_theme_font_size_override("font_size", int(c * 9.2))
+
+
 func _show_result() -> void:
 	_clock_stop()
 	var who := ""
@@ -415,11 +458,13 @@ func _show_result() -> void:
 			who = "白方获胜"
 		GameCore.State.DRAW:
 			who = "平局"
-	if mode != Mode.PVP and who != "":
+	if mode == Mode.PVE and (core.state == GameCore.State.BLACK_WIN or core.state == GameCore.State.WHITE_WIN):
 		var winner_color := GameCore.BLACK if core.state == GameCore.State.BLACK_WIN else GameCore.WHITE
-		if mode == Mode.PVE:
-			who += "（%s）" % ("你赢了" if winner_color == human_color() else "AI 赢了")
+		who += "（%s）" % ("你赢了" if winner_color == human_color() else "AI 赢了")
 	_result_title.text = who
 	_result_detail.text = "共 %d 手 · 用时 %s" % [core.move_count(), elapsed_text()]
-	_result.visible = true
+	_big_char.text = _big_char_text()
+	_big_char.add_theme_color_override("font_color", _big_char_color())
+	_update_big_char_font()
+	_set_result_visible(true)
 	_update_ui()

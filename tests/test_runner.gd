@@ -242,14 +242,20 @@ func run_ai() -> void:
 			wins += 1
 	check("困难档全胜随机档", wins == games, "胜 %d/%d" % [wins, games])
 
-	print("[14] 档位阶梯：困难(4 层) vs 入门(1 层)，4 番，预算 500ms")
-	var wins2 := 0
-	var games2 := 4
-	for i in range(games2):
-		var r := play_levels(4, 1, i % 2 == 0, 500)
-		if r == 1:
-			wins2 += 1
-	check("困难档强于入门档（>=3/4）", wins2 >= 3, "胜 %d/%d" % [wins2, games2])
+	# 五子棋先手优势很大，混着打会把实力差淹掉（弱档执黑就赢），所以按颜色分开统计：
+	# 执黑要全胜（先手 + 实力），执白至少赢一局（纯实力）。
+	print("[14] 档位阶梯：困难(4 层) vs 入门(1 层)，预算 700ms")
+	var black_wins := 0
+	for i in range(2):
+		if play_levels(4, 1, true, 700) == 1:
+			black_wins += 1
+	check("困难档执黑全胜", black_wins == 2, "%d/2" % black_wins)
+
+	var white_wins := 0
+	for i in range(2):
+		if play_levels(4, 1, false, 700) == 1:
+			white_wins += 1
+	check("困难档执白至少一胜", white_wins >= 1, "%d/2" % white_wins)
 
 
 	print("[15] AI 耗时")
@@ -539,6 +545,30 @@ func run_flow() -> void:
 	check("结果面板弹出", board._result.visible == true)
 	check("结果标题非空", board._result_title.text != "")
 	check("结果详情含用时", board._result_detail.text.contains("用时"), board._result_detail.text)
+
+	# 结果面板现在挂在棋盘区里，水平居中就是"相对棋盘"而不是相对窗口
+	check("结果面板挂在棋盘区", board._result.get_parent().name == "BoardHost")
+	check("结算大字可见", board._big_char.visible == true)
+	check_eq("双人局大字为胜", board._big_char.text, "胜")
+	check("大字层夹在棋盘与面板之间",
+		board._canvas.get_index() < board._big_char.get_index()
+		and board._big_char.get_index() < board._result.get_index())
+	var cell: float = board._canvas.cell_size()
+	var fs: int = board._big_char.get_theme_font_size("font_size")
+	check("大字字号按格算", absi(fs - int(cell * 9.2)) <= 2, "fs=%d cell=%.1f" % [fs, cell])
+	check("胜字用强调色",
+		board._big_char.get_theme_color("font_color").is_equal_approx(Ui.color("accent")))
+	check("遮罩随面板一起出现", board._dim.visible == true)
+
+	# 三个字的判定（纯逻辑，不起对局）
+	board.mode = 1
+	board.ai_is_black = true
+	check_eq("玩家执白遇黑胜 → 负", board._big_char_text(), "负")
+	board.core.state = GameCore.State.DRAW
+	check_eq("满盘无五连 → 平", board._big_char_text(), "平")
+	board.core.state = GameCore.State.BLACK_WIN
+	board.mode = 0
+	board.ai_is_black = false
 	var n_before: int = board.core.move_count()
 	board._on_cell_clicked(Vector2i(10, 10))
 	check_eq("结束后拒绝落子", board.core.move_count(), n_before)
@@ -546,6 +576,8 @@ func run_flow() -> void:
 	board._on_undo()
 	check("结束后悔棋可撤销胜负", board.core.is_playing())
 	check("结束后悔棋收起面板", board._result.visible == false)
+	check("悔棋后大字隐藏", board._big_char.visible == false)
+	check("悔棋后遮罩隐藏", board._dim.visible == false)
 
 	board._on_cell_clicked(Vector2i(7, 7))
 	check("悔棋后能继续下", board.core.move_count() == n_before)
@@ -597,14 +629,21 @@ func run_theme() -> void:
 	Ui.set_theme("a_sakura", false)
 	check("切换会通知监听者", hits[0] == 1, "hits=%d" % hits[0])
 
+	# 持久化用临时文件验证，绝不碰玩家的 settings.cfg
+	var real_path := Ui.save_path
+	Ui.save_path = "user://test_settings.cfg"
 	Ui.set_theme("b_warmwood", true)
 	var cfg := ConfigFile.new()
-	var ok_load := cfg.load(Ui.SAVE_PATH) == OK
+	var ok_load := cfg.load(Ui.save_path) == OK
 	check("主题写入 settings.cfg", ok_load and str(cfg.get_value("ui", "theme", "")) == "b_warmwood")
+	Ui.set_theme("a_sakura", false)
 	Ui.load_saved()
 	check("重新读取能恢复主题", Ui.current_id == "b_warmwood")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(Ui.save_path))
+	Ui.save_path = real_path
 
-	Ui.set_theme(original, true)
+	# 测试结束把主题复位到默认，别把开发时的选择留给玩家
+	Ui.set_theme(UiPalette.DEFAULT_ID, true)
 
 
 # ================= 4b. 背景与字体 =================
@@ -616,6 +655,8 @@ func run_art_font() -> void:
 			"%dx%d" % [Ui.art_texture().get_width(), Ui.art_texture().get_height()])
 
 	check("行楷标题字体是 FontFile", Ui.title_font() is FontFile)
+	check("标题用毛笔行书（Zhi Mang Xing）",
+		str(Ui.title_font().resource_path).contains("ZhiMangXing"), str(Ui.title_font().resource_path))
 	check("行楷字体有中文字形", Ui.title_font().has_char("棋".unicode_at(0)))
 
 	var bf := Ui.button_font() as SystemFont

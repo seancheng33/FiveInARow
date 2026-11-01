@@ -7,9 +7,11 @@ extends Node
 signal changed
 
 const SAVE_PATH := "user://settings.cfg"
+# 实际使用的路径。测试会临时指到别处，避免把开发时的主题选择写进玩家的 settings.cfg
+var save_path := SAVE_PATH
 
-# 主菜单标题用的行楷（马善政毛笔行楷，SIL OFL 1.1，可免费商用）
-const TITLE_FONT_PATH := "res://assets/fonts/MaShanZheng-Regular.ttf"
+# 标题/大字用的毛笔行楷（钟齐志莽行书 Zhi Mang Xing，SIL OFL 1.1，可免费商用）
+const TITLE_FONT_PATH := "res://assets/fonts/ZhiMangXing-Regular.ttf"
 # 主菜单国画背景
 const ART_PATH := "res://assets/art/bg_shanshui.png"
 
@@ -290,7 +292,7 @@ func _build_frame_style() -> StyleBoxFlat:
 
 func load_saved() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SAVE_PATH) != OK:
+	if cfg.load(save_path) != OK:
 		return
 	var id := str(cfg.get_value("ui", "theme", UiPalette.DEFAULT_ID))
 	if UiPalette.has_id(id):
@@ -299,6 +301,6 @@ func load_saved() -> void:
 
 func save_current() -> void:
 	var cfg := ConfigFile.new()
-	cfg.load(SAVE_PATH)
+	cfg.load(save_path)
 	cfg.set_value("ui", "theme", current_id)
-	cfg.save(SAVE_PATH)
+	cfg.save(save_path)

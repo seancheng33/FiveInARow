@@ -183,7 +183,36 @@ theme_override_font_sizes/font_size = 12
 text = "点棋盘落子。R 重开、U 悔棋、Esc 返回菜单。"
 autowrap_mode = 2
 
-[node name="Result" type="Control" parent="."]
+[node name="Dim" type="ColorRect" parent="Margin/Row/BoardHost"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.16, 0.1, 0.12, 0.3)
+
+[node name="BigChar" type="Label" parent="Margin/Row/BoardHost"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 300
+text = "胜"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Result" type="Control" parent="Margin/Row/BoardHost"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -193,53 +222,43 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Dim" type="ColorRect" parent="Result"]
-unique_name_in_owner = true
+[node name="Holder" type="MarginContainer" parent="Margin/Row/BoardHost/Result"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.16, 0.1, 0.12, 0.3)
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 22
 
-[node name="Holder" type="MarginContainer" parent="Result"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 36
-
-[node name="VBox" type="VBoxContainer" parent="Result/Holder"]
+[node name="VBox" type="VBoxContainer" parent="Margin/Row/BoardHost/Result/Holder"]
 layout_mode = 2
 alignment = 2
 
-[node name="Row" type="HBoxContainer" parent="Result/Holder/VBox"]
+[node name="Row" type="HBoxContainer" parent="Margin/Row/BoardHost/Result/Holder/VBox"]
 layout_mode = 2
 alignment = 1
 
-[node name="Card" type="PanelContainer" parent="Result/Holder/VBox/Row"]
-custom_minimum_size = Vector2(440, 0)
+[node name="Card" type="PanelContainer" parent="Margin/Row/BoardHost/Result/Holder/VBox/Row"]
+custom_minimum_size = Vector2(410, 0)
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Result/Holder/VBox/Row/Card"]
+[node name="VBox" type="VBoxContainer" parent="Margin/Row/BoardHost/Result/Holder/VBox/Row/Card"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ResultTitle" type="Label" parent="Result/Holder/VBox/Row/Card/VBox"]
+[node name="ResultTitle" type="Label" parent="Margin/Row/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"AccentLabel"
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 28
 text = "黑方获胜"
 horizontal_alignment = 1
 
-[node name="ResultDetail" type="Label" parent="Result/Holder/VBox/Row/Card/VBox"]
+[node name="ResultDetail" type="Label" parent="Margin/Row/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
@@ -247,27 +266,27 @@ theme_override_font_sizes/font_size = 15
 text = "共 0 手 · 用时 00:00"
 horizontal_alignment = 1
 
-[node name="Buttons" type="HBoxContainer" parent="Result/Holder/VBox/Row/Card/VBox"]
+[node name="Buttons" type="HBoxContainer" parent="Margin/Row/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="AgainButton" type="Button" parent="Result/Holder/VBox/Row/Card/VBox/Buttons"]
+[node name="AgainButton" type="Button" parent="Margin/Row/BoardHost/Result/Holder/VBox/Row/Card/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "再来一局"
 
-[node name="ResultUndoButton" type="Button" parent="Result/Holder/VBox/Row/Card/VBox/Buttons"]
+[node name="ResultUndoButton" type="Button" parent="Margin/Row/BoardHost/Result/Holder/VBox/Row/Card/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "悔棋"
 
-[node name="ResultThemeButton" type="Button" parent="Result/Holder/VBox/Row/Card/VBox/Buttons"]
+[node name="ResultThemeButton" type="Button" parent="Margin/Row/BoardHost/Result/Holder/VBox/Row/Card/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "外观"
 
-[node name="ResultBackButton" type="Button" parent="Result/Holder/VBox/Row/Card/VBox/Buttons"]
+[node name="ResultBackButton" type="Button" parent="Margin/Row/BoardHost/Result/Holder/VBox/Row/Card/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "返回菜单"

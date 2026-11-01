@@ -11,9 +11,11 @@ config_version=5
 [application]
 
 config/name="五子棋 Gomoku"
+config/description="五子棋单机人机对战：五档难度、五套可切换主题、对局计时。"
+config/version="0.9.0"
 run/main_scene="res://main_scene.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://icon.png"
 
 [autoload]
 

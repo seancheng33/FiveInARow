@@ -57,6 +57,12 @@ func _recalc() -> void:
 		(size.y - _cell * (n - 1)) * 0.5)
 
 
+# 当前格宽（像素）。结算大字要按"几格"定字号，所以暴露出去
+func cell_size() -> float:
+	_recalc()
+	return _cell
+
+
 func cell_center(cell: Vector2i) -> Vector2:
 	return _origin + Vector2(cell) * _cell
 
