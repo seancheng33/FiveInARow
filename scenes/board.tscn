@@ -12,14 +12,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_board")
 
-[node name="Bg" type="ColorRect" parent="."]
+[node name="Bg" type="TextureRect" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.105, 0.122, 0.145, 1)
+expand_mode = 1
+stretch_mode = 0
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -44,7 +46,7 @@ theme_override_constants/separation = 12
 [node name="ModeLabel" type="Label" parent="Margin/Layout/TopBar"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.66, 0.76, 0.87, 1)
+theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 17
 text = "双人对战"
 
@@ -52,7 +54,11 @@ text = "双人对战"
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="StatusLabel" type="Label" parent="Margin/Layout/TopBar"]
+[node name="StatusChip" type="PanelContainer" parent="Margin/Layout/TopBar"]
+layout_mode = 2
+theme_type_variation = &"StatusChip"
+
+[node name="StatusLabel" type="Label" parent="Margin/Layout/TopBar/StatusChip"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
@@ -68,6 +74,7 @@ layout_mode = 2
 text = "返回菜单"
 
 [node name="BoardHost" type="Control" parent="Margin/Layout"]
+clip_contents = true
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -102,7 +109,7 @@ size_flags_horizontal = 3
 [node name="HintLabel" type="Label" parent="Margin/Layout/BottomBar"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.6, 0.67, 1)
+theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 14
 text = "R 重开 · U 悔棋 · Esc 返回菜单"
 
@@ -117,13 +124,14 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Dim" type="ColorRect" parent="Margin/Layout/BoardHost/Result"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.04, 0.05, 0.07, 0.42)
+color = Color(0.16, 0.1, 0.12, 0.3)
 
 [node name="Holder" type="MarginContainer" parent="Margin/Layout/BoardHost/Result"]
 layout_mode = 1
@@ -156,6 +164,7 @@ theme_override_constants/separation = 10
 [node name="ResultTitle" type="Label" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"AccentLabel"
 theme_override_font_sizes/font_size = 30
 text = "黑方获胜"
 horizontal_alignment = 1
@@ -163,7 +172,7 @@ horizontal_alignment = 1
 [node name="ResultDetail" type="Label" parent="Margin/Layout/BoardHost/Result/Holder/VBox/Row/Card/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.66, 0.72, 0.79, 1)
+theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 16
 text = "共 0 手"
 horizontal_alignment = 1

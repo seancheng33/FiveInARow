@@ -18,6 +18,7 @@ godot --path <本目录>
 | 操作 | 说明 |
 |---|---|
 | 鼠标左键 | 落子，悬停会显示半透明预览 |
+| 菜单底部「外观」圆点 | 切换界面主题，立即生效并记住选择 |
 | `R` | 重新开始当前对局 |
 | `U` | 悔棋（人机模式下会一次撤掉双方各一手） |
 | `Esc` | 返回主菜单 |
@@ -33,9 +34,8 @@ godot --path <本目录>
 ## 目录结构
 
 ```
-project.godot            工程配置（960x740，canvas_items 拉伸，全局主题）
+project.godot            工程配置（960x740，canvas_items 拉伸；Ui 自动加载）
 main_scene.tscn          入口场景，只挂一个 MainMenu 实例
-assets/ui_theme.tres     全局主题（按钮/面板样式、默认字号）
 scenes/
   main_menu.tscn         主菜单 + 难度选择面板
   board.tscn             对局界面（顶栏 / 棋盘 / 底栏 / 结束面板）
@@ -49,6 +49,8 @@ scripts/
   defensive_ai.gd        普通：一层启发（抢五连 / 堵五连 / 棋型评分）
   advanced_ai.gd         困难：Minimax + Alpha-Beta + 迭代加深 + 时间预算
   pattern_detector.gd    棋型识别（支持跳三、跳四）
+  ui_palette.gd          五套界面配色的数据表（唯一配色来源）
+  ui_skin.gd             外观单例 Ui：按配色构建 Theme / 棋盘样式 / 背景渐变
 tests/                   功能测试与 GUI 驱动（不参与导出）
 ```
 
@@ -59,6 +61,24 @@ tests/                   功能测试与 GUI 驱动（不参与导出）
 - **流程**（谁该走、AI 什么时候动、面板什么时候弹）只写在 `board.gd`。
 - AI 通过 `get_next_move(board_state: Array, player_type: int) -> Vector2i` 接收一份**快照**，
   不持有真实棋盘，因此可以在子线程里安全运行。
+
+## 外观主题
+
+菜单底部一排圆点就是主题选择器，点一下立即换肤，选择存在 `user://settings.cfg`，下次启动沿用。
+
+| 主题 | 界面 | 棋盘 | 气质 |
+|---|---|---|---|
+| 樱雾 Sakura Mist | 米白偏粉 · 桃粉强调 | 浅樱木色 · 大圆角 | 最柔最粉，长时间看不累 |
+| 暖木 Warm Wood | 奶油底 · 珊瑚红 | 焦糖木面 + 胡桃木外框 | 像真实棋具，最耐看 |
+| 莓夜 Berry Night | 深莓紫底 · 霓虹粉 | 暖米色「纸」 | 反差最大，适合做封面 |
+| 和纸 Washi Beni | 米纸底 · 朱红 · 宋体 | 米黄纸感 · 直角细边 | 像装帧考究的棋谱 |
+| 樱木 Sakura Wood | 樱雾的粉色界面 | 暖木的木质棋盘 | 粉色氛围 + 木质质感 |
+
+实现方式：`ui_palette.gd` 只存颜色字符串，`ui_skin.gd`（自动加载单例 `Ui`）把它们编译成
+`Theme` + `StyleBoxFlat`，并广播 `changed` 给棋盘画布和背景。加一套新主题只需要往
+`ui_palette.gd` 的数组里加一条字典，不用改任何界面代码。
+
+> 注意：外观脚本故意不写 `class_name` —— `Skin` 是 Godot 内置类名，会与原生类冲突。
 
 ## AI 三档
 
@@ -95,6 +115,9 @@ godot --path . res://tests/gui_driver.tscn
 # 人机对战卡顿检测（记录帧间隔）
 godot --path . res://tests/gui_ai_driver.tscn
 
+# 逐主题截图（5 套各拍菜单 + 对局，写到 tests/shots/）
+godot --path . res://tests/theme_shots.tscn
+
 # 棋力对拼（可改 tests/match_probe.gd 里的局数与预算）
 godot --headless --path . res://tests/match_probe.tscn
 
@@ -105,6 +128,7 @@ godot --headless --path . res://tests/ai_debug.tscn
 ## 已知限制
 
 - 仅在 Godot 4.2.2 / Windows x86_64 验证过；未测试移动端触摸输入（代码里没有 `InputEventScreenTouch`）。
+- 和纸主题的衬线字体用 `SystemFont` 调用系统「宋体」，换到没有宋体的机器会回退到默认无衬线。
 - 未做禁手规则、计时器、复盘回放、联网对战。
 - 未打包 `.exe`：本机没有安装 4.2.2 导出模板。装上后 `export_presets.cfg` 里的
   `Windows Desktop` 预设可直接导出到 `dist/`。

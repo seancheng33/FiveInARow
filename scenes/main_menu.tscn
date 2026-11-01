@@ -11,14 +11,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_menu")
 
-[node name="Bg" type="ColorRect" parent="."]
+[node name="Bg" type="TextureRect" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.105, 0.122, 0.145, 1)
+expand_mode = 1
+stretch_mode = 0
 
 [node name="MenuBox" type="CenterContainer" parent="."]
 unique_name_in_owner = true
@@ -41,7 +43,7 @@ horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="MenuBox/Box"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.62, 0.7, 1)
+theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 15
 text = "GOMOKU · 单机对战"
 horizontal_alignment = 1
@@ -89,9 +91,32 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "退出游戏"
 
+[node name="ThemeRow" type="HBoxContainer" parent="MenuBox/Box"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="ThemeLabel" type="Label" parent="MenuBox/Box/ThemeRow"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 13
+text = "外观"
+
+[node name="ThemeDots" type="HBoxContainer" parent="MenuBox/Box/ThemeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ThemeName" type="Label" parent="MenuBox/Box/ThemeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 13
+text = "樱雾"
+
 [node name="Version" type="Label" parent="MenuBox/Box"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.45, 0.52, 1)
+theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 13
 text = "v2.0 · R 重开 / U 悔棋 / Esc 返回"
 horizontal_alignment = 1

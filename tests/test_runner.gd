@@ -14,6 +14,7 @@ func _ready() -> void:
 	run_ai()
 	await run_flow()
 	await run_gui_layout()
+	run_theme()
 	print("")
 	print("=== SUMMARY: passed=%d / total=%d, failed=%d ===" % [passed, total, failed])
 	for n in failed_names:
@@ -363,6 +364,7 @@ func run_flow() -> void:
 	check("主菜单已加载", menu != null)
 	check("难度面板初始隐藏", menu._difficulty.visible == false)
 	check("菜单可见", menu._menu_box.visible == true)
+	check_eq("菜单有 5 个主题圆点", menu._dots.get_child_count(), 5)
 
 	menu._start_game(0, 0, false)
 	await get_tree().process_frame
@@ -459,7 +461,56 @@ func run_flow() -> void:
 	await get_tree().process_frame
 
 
-# ================= 4. 结构检查（像素级验证放在 GUI 驱动里做） =================
+# ================= 4. 主题系统 =================
+func run_theme() -> void:
+	print("[20] 主题系统")
+	check_eq("共 5 套配色", UiPalette.all().size(), 5)
+	check_eq("id 不重复", UiPalette.ids().size(), 5)
+
+	var need := ["id", "name", "en", "accent", "accent_text", "text", "muted",
+		"bg_top", "bg_bottom", "btn_bg", "btn_text", "board_bg", "board_line",
+		"frame_bg", "stone_black", "stone_white", "win", "radius_btn",
+		"radius_card", "radius_board", "shadow", "shadow_size", "serif"]
+	var missing: Array = []
+	for p in UiPalette.all():
+		for k in need:
+			if not p.has(k):
+				missing.append("%s.%s" % [p["id"], k])
+	check("调色板字段齐全", missing.is_empty(), str(missing))
+
+	var original := Ui.current_id
+
+	Ui.set_theme("c_berry", false)
+	check_eq("切换到莓夜", Ui.current_id, "c_berry")
+	check("莓夜是暗底", Ui.color("bg_top").get_luminance() < 0.25,
+		"luminance=%.2f" % Ui.color("bg_top").get_luminance())
+	check("棋盘样式跟随主题", Ui.board_style.bg_color.is_equal_approx(UiPalette.hex("#F3DDCB")))
+	check("按钮圆角跟随主题", Ui.board_style.corner_radius_top_left == 18)
+
+	Ui.set_theme("d_washi", false)
+	check("和纸用衬线字体", Ui.theme.default_font != null)
+	check("和纸棋盘是米黄", Ui.board_style.bg_color.is_equal_approx(UiPalette.hex("#ECD9B8")))
+
+	Ui.set_theme("e_sakuraw", false)
+	check("混合款用暖木棋盘", Ui.board_style.bg_color.is_equal_approx(UiPalette.hex("#E3BB8C")))
+	check("混合款界面仍是樱雾", Ui.color("accent").is_equal_approx(UiPalette.hex("#E8698B")))
+
+	var hits := [0]
+	Ui.changed.connect(func(): hits[0] += 1)
+	Ui.set_theme("a_sakura", false)
+	check("切换会通知监听者", hits[0] == 1, "hits=%d" % hits[0])
+
+	Ui.set_theme("b_warmwood", true)
+	var cfg := ConfigFile.new()
+	var ok_load := cfg.load(Ui.SAVE_PATH) == OK
+	check("主题写入 settings.cfg", ok_load and str(cfg.get_value("ui", "theme", "")) == "b_warmwood")
+	Ui.load_saved()
+	check("重新读取能恢复主题", Ui.current_id == "b_warmwood")
+
+	Ui.set_theme(original, true)
+
+
+# ================= 5. 结构检查（像素级验证放在 GUI 驱动里做） =================
 func run_gui_layout() -> void:
 	print("[19] 界面结构")
 	var b: Node = load("res://scenes/board.tscn").instantiate()

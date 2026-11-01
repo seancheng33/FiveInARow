@@ -7,6 +7,9 @@ const BOARD_SCENE := preload("res://scenes/board.tscn")
 @onready var _menu_box: Control = %MenuBox
 @onready var _difficulty: Control = %Difficulty
 @onready var _depth_spin: SpinBox = %DepthSpin
+@onready var _bg: TextureRect = %Bg
+@onready var _dots: HBoxContainer = %ThemeDots
+@onready var _theme_name: Label = %ThemeName
 
 var _board: Node = null
 var _pending_mode := 0
@@ -33,6 +36,59 @@ func _ready() -> void:
 	_difficulty.visible = false
 	_menu_box.visible = true
 	_clear_board()
+	theme = Ui.theme
+	_build_theme_dots()
+	Ui.changed.connect(_on_skin_changed)
+	_on_skin_changed()
+
+
+# ---------------- 外观（主题） ----------------
+
+func _build_theme_dots() -> void:
+	for p in UiPalette.all():
+		var b := Button.new()
+		b.custom_minimum_size = Vector2(26, 26)
+		b.focus_mode = Control.FOCUS_NONE
+		b.tooltip_text = "%s · %s" % [p["name"], p["desc"]]
+		b.pressed.connect(_on_pick_theme.bind(str(p["id"])))
+		_dots.add_child(b)
+
+
+func _on_pick_theme(id: String) -> void:
+	Ui.set_theme(id)
+
+
+func _on_skin_changed() -> void:
+	theme = Ui.theme
+	_bg.texture = Ui.bg_texture()
+	_theme_name.text = Ui.current_name()
+	for i in range(UiPalette.all().size()):
+		if i >= _dots.get_child_count():
+			break
+		var p: Dictionary = UiPalette.all()[i]
+		_paint_dot(_dots.get_child(i), p, str(p["id"]) == Ui.current_id)
+
+
+func _paint_dot(b: Button, p: Dictionary, selected: bool) -> void:
+	var accent := UiPalette.hex(str(p["accent"]))
+	var ring := UiPalette.hex(str(p["text"]))
+	for st in ["normal", "hover", "pressed"]:
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = accent if st != "pressed" else accent.darkened(0.15)
+		sb.set_corner_radius_all(13)
+		sb.set_border_width_all(2 if selected else 1)
+		sb.border_color = ring if selected else accent.darkened(0.12)
+		sb.content_margin_left = 0
+		sb.content_margin_right = 0
+		sb.content_margin_top = 0
+		sb.content_margin_bottom = 0
+		b.add_theme_stylebox_override(st, sb)
+	var fo := StyleBoxFlat.new()
+	fo.draw_center = false
+	fo.set_corner_radius_all(13)
+	fo.set_border_width_all(2)
+	fo.border_color = accent
+	b.add_theme_stylebox_override("focus", fo)
 
 
 func _on_pvp() -> void:

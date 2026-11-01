@@ -15,13 +15,13 @@ run/main_scene="res://main_scene.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+Ui="*res://scripts/ui_skin.gd"
+
 [display]
 
 window/size/viewport_width=960
 window/size/viewport_height=740
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-
-[gui]
-
-theme/custom="res://assets/ui_theme.tres"

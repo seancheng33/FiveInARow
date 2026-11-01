@@ -1,23 +1,14 @@
 # board_canvas.gd
 # 只负责"画棋盘"和"把鼠标位置翻译成格子坐标"，不碰规则、不碰 AI。
+# 所有颜色都来自自动加载单例 AppSkin，切换主题后自动重绘。
 class_name BoardCanvas
 extends Control
 
 signal cell_clicked(cell: Vector2i)
 signal cell_hovered(cell: Vector2i)
 
-const PAD := 20.0
-
-const COL_BOARD_BG := Color(0.87, 0.71, 0.47)
-const COL_BOARD_EDGE := Color(0.42, 0.28, 0.15)
-const COL_LINE := Color(0.36, 0.24, 0.13)
-const COL_STAR := Color(0.28, 0.18, 0.09)
-const COL_BLACK := Color(0.11, 0.12, 0.14)
-const COL_BLACK_HI := Color(0.42, 0.45, 0.5)
-const COL_WHITE := Color(0.97, 0.96, 0.93)
-const COL_WHITE_EDGE := Color(0.55, 0.48, 0.4)
-const COL_WIN := Color(0.98, 0.31, 0.25)
-const COL_LAST := Color(0.9, 0.2, 0.2)
+const PAD := 6.0        # 画布内自身留白
+const FRAME := 0.30     # 木质外框宽度（单位：格）
 
 var core: GameCore = null
 var hover := Vector2i(-1, -1)
@@ -30,11 +21,16 @@ var _origin := Vector2.ZERO
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	resized.connect(_on_resized)
+	Ui.changed.connect(_on_skin_changed)
 	_recalc()
 
 
 func _on_resized() -> void:
 	_recalc()
+	queue_redraw()
+
+
+func _on_skin_changed() -> void:
 	queue_redraw()
 
 
@@ -44,14 +40,18 @@ func set_core(c: GameCore) -> void:
 	queue_redraw()
 
 
+func _board_size() -> int:
+	return 15 if core == null else core.size
+
+
+# 棋盘（含外框）总宽高 = (n-1) 格 + 两侧各半格 + 两侧外框
 func _recalc() -> void:
-	var n := 15
-	if core != null:
-		n = core.size
+	var n := _board_size()
+	var span := float(n - 1) + 1.0 + FRAME * 2.0
 	var avail := minf(size.x, size.y) - PAD * 2.0
-	if avail <= 10.0:
-		avail = 10.0
-	_cell = avail / float(n - 1)
+	if avail <= 12.0:
+		avail = 12.0
+	_cell = avail / span
 	_origin = Vector2(
 		(size.x - _cell * (n - 1)) * 0.5,
 		(size.y - _cell * (n - 1)) * 0.5)
@@ -67,7 +67,7 @@ func cell_from_position(pos: Vector2) -> Vector2i:
 		return Vector2i(-1, -1)
 	var rel := (pos - _origin) / _cell
 	var c := Vector2i(roundi(rel.x), roundi(rel.y))
-	var n := 15 if core == null else core.size
+	var n := _board_size()
 	if c.x < 0 or c.x >= n or c.y < 0 or c.y >= n:
 		return Vector2i(-1, -1)
 	if absf(rel.x - c.x) > 0.45 or absf(rel.y - c.y) > 0.45:
@@ -98,35 +98,36 @@ func _notification(what: int) -> void:
 # ---------------- 绘制 ----------------
 
 func _draw() -> void:
-	var n := 15
-	if core != null:
-		n = core.size
+	var n := _board_size()
 	_recalc()
 
-	# 棋盘底板 + 外框
-	var board_rect := Rect2(_origin - Vector2(_cell, _cell) * 0.5,
-		Vector2(_cell, _cell) * float(n))
-	draw_rect(board_rect, COL_BOARD_BG, true)
-	draw_rect(board_rect, COL_BOARD_EDGE, false, 2.0)
+	var board_rect := Rect2(_origin - Vector2(_cell, _cell) * 0.5, Vector2(_cell, _cell) * float(n))
+	var frame_rect := board_rect.grow(_cell * FRAME)
 
-	# 网格
+	# 木质外框 + 棋盘面（圆角与阴影都放在 StyleBoxFlat 里）
+	draw_style_box(Ui.frame_style, frame_rect)
+	draw_style_box(Ui.board_style, board_rect)
+
+	var line_col := Ui.color("board_line")
 	var span := _cell * (n - 1)
+	var lw := maxf(1.0, _cell * 0.024)
 	for i in range(n):
 		var p := _origin + Vector2(0, i * _cell)
-		draw_line(p, p + Vector2(span, 0), COL_LINE, 1.0)
+		draw_line(p, p + Vector2(span, 0), line_col, lw)
 		p = _origin + Vector2(i * _cell, 0)
-		draw_line(p, p + Vector2(0, span), COL_LINE, 1.0)
+		draw_line(p, p + Vector2(0, span), line_col, lw)
 
 	# 星位
+	var star_col := Ui.color("board_star")
 	for s in _star_points(n):
-		draw_circle(_origin + Vector2(s) * _cell, maxf(2.0, _cell * 0.09), COL_STAR)
+		draw_circle(_origin + Vector2(s) * _cell, maxf(2.0, _cell * 0.085), star_col)
 
 	if core == null:
 		return
 
 	# 悬停预览
 	if show_hover and hover.x >= 0 and core.can_place(hover.x, hover.y):
-		var base := COL_BLACK if core.turn == GameCore.BLACK else COL_WHITE
+		var base := Ui.color("stone_black") if core.turn == GameCore.BLACK else Ui.color("stone_white")
 		draw_circle(cell_center(hover), _cell * 0.42, Color(base.r, base.g, base.b, 0.35))
 
 	# 棋子
@@ -141,26 +142,33 @@ func _draw() -> void:
 	if not core.history.is_empty():
 		var last := core.last_move()
 		var lv := core.at(last.x, last.y)
-		var dot_col := COL_WHITE if lv == GameCore.BLACK else COL_BLACK
-		draw_circle(cell_center(last), maxf(2.0, _cell * 0.11), dot_col)
+		var dot_col := Ui.color("accent")
+		if lv == GameCore.WHITE:
+			dot_col = Ui.color("win")
+		draw_circle(cell_center(last), maxf(2.0, _cell * 0.1), dot_col)
 
 	# 获胜连线
 	if not core.win_line.is_empty():
+		var win_col := Ui.color("win")
 		for p in core.win_line:
 			var v := Vector2i(p)
-			draw_arc(cell_center(v), _cell * 0.46, 0, TAU, 28, COL_WIN, maxf(2.0, _cell * 0.07))
+			draw_arc(cell_center(v), _cell * 0.46, 0, TAU, 28, win_col, maxf(2.0, _cell * 0.07))
 
 
 func _draw_stone(cell: Vector2i, v: int) -> void:
 	var c := cell_center(cell)
 	var r := _cell * 0.42
 	if v == GameCore.BLACK:
-		draw_circle(c, r, COL_BLACK)
-		draw_circle(c - Vector2(r, r) * 0.28, r * 0.34, Color(COL_BLACK_HI.r, COL_BLACK_HI.g, COL_BLACK_HI.b, 0.55))
+		var base := Ui.color("stone_black")
+		var hi := Ui.color("stone_black_hi")
+		draw_circle(c, r, base)
+		draw_circle(c - Vector2(r, r) * 0.28, r * 0.32, Color(hi.r, hi.g, hi.b, 0.55))
 	else:
-		draw_circle(c, r, COL_WHITE)
-		draw_arc(c, r - 0.5, 0, TAU, 28, COL_WHITE_EDGE, 1.4)
-		draw_circle(c - Vector2(r, r) * 0.28, r * 0.3, Color(1, 1, 1, 0.9))
+		var base := Ui.color("stone_white")
+		var edge := Ui.color("stone_white_edge")
+		draw_circle(c, r, base)
+		draw_arc(c, r - 0.5, 0, TAU, 28, edge, maxf(1.0, _cell * 0.03))
+		draw_circle(c - Vector2(r, r) * 0.28, r * 0.28, Color(1, 1, 1, 0.9))
 
 
 func _star_points(n: int) -> Array:

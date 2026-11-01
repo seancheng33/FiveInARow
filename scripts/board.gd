@@ -8,6 +8,7 @@ enum Mode { PVP, PVE, EVE }
 
 const AI_MIN_THINK_MS := 360
 
+@onready var _bg: TextureRect = %Bg
 @onready var _canvas: BoardCanvas = %Canvas
 @onready var _mode_label: Label = %ModeLabel
 @onready var _status_label: Label = %StatusLabel
@@ -16,6 +17,7 @@ const AI_MIN_THINK_MS := 360
 @onready var _back_btn: Button = %BackButton
 @onready var _hint: Label = %HintLabel
 @onready var _result: Control = %Result
+@onready var _dim: ColorRect = %Dim
 @onready var _result_title: Label = %ResultTitle
 @onready var _result_detail: Label = %ResultDetail
 @onready var _again_btn: Button = %AgainButton
@@ -43,6 +45,8 @@ var _dot_timer := 0.0
 
 
 func _ready() -> void:
+	Ui.changed.connect(_on_skin_changed)
+	_on_skin_changed()
 	_canvas.set_core(core)
 	_canvas.cell_clicked.connect(_on_cell_clicked)
 	_canvas.cell_hovered.connect(_on_cell_hovered)
@@ -54,6 +58,13 @@ func _ready() -> void:
 	_result_back_btn.pressed.connect(_on_back)
 	_result.visible = false
 	_apply_setup()
+
+
+func _on_skin_changed() -> void:
+	theme = Ui.theme
+	_bg.texture = Ui.bg_texture()
+	if is_instance_valid(_dim):
+		_dim.color = Ui.color("scrim")
 
 
 # 主菜单在 add_child 之前调用；若已经在场景树里则立即生效
