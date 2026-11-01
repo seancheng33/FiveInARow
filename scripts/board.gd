@@ -216,12 +216,21 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _after_move() -> void:
+	_play_move_sound()
 	_canvas.queue_redraw()
 	_update_ui()
 	if not core.is_playing():
 		_show_result()
 	else:
 		_maybe_start_ai()
+
+
+# 黑子低沉、白子清亮，音高不同，闭着眼也听得出谁下的
+func _play_move_sound() -> void:
+	if core.history.is_empty():
+		return
+	var last := core.last_move()
+	Sfx.play("place_black" if core.at(last.x, last.y) == GameCore.BLACK else "place_white")
 
 
 # ---------------- AI 调度 ----------------
@@ -466,5 +475,12 @@ func _show_result() -> void:
 	_big_char.text = _big_char_text()
 	_big_char.add_theme_color_override("font_color", _big_char_color())
 	_update_big_char_font()
+	match _big_char.text:
+		"胜":
+			Sfx.play("win")
+		"负":
+			Sfx.play("lose")
+		"平":
+			Sfx.play("draw")
 	_set_result_visible(true)
 	_update_ui()

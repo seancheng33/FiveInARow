@@ -115,13 +115,19 @@ alignment = 1
 
 [node name="BtnTheme" type="Button" parent="MenuBox/Box/BottomRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(145, 44)
+custom_minimum_size = Vector2(118, 44)
 layout_mode = 2
 text = "外观主题"
 
+[node name="BtnSound" type="Button" parent="MenuBox/Box/BottomRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(118, 44)
+layout_mode = 2
+text = "音效开启"
+
 [node name="BtnQuit" type="Button" parent="MenuBox/Box/BottomRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(145, 44)
+custom_minimum_size = Vector2(118, 44)
 layout_mode = 2
 text = "退出游戏"
 

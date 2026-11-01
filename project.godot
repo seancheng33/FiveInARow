@@ -20,6 +20,7 @@ config/icon="res://icon.png"
 [autoload]
 
 Ui="*res://scripts/ui_skin.gd"
+Sfx="*res://scripts/sfx.gd"
 
 [display]
 

@@ -28,6 +28,7 @@ func _ready() -> void:
 	%BtnPVEWhite.pressed.connect(_on_pve_ai_first)
 	%BtnEVE.pressed.connect(_on_eve)
 	%BtnTheme.pressed.connect(_open_theme_picker)
+	%BtnSound.pressed.connect(_on_toggle_sound)
 	%BtnQuit.pressed.connect(_on_quit)
 	%BtnBackToMenu.pressed.connect(_hide_difficulty)
 
@@ -41,6 +42,8 @@ func _ready() -> void:
 	theme = Ui.theme
 	Ui.changed.connect(_on_skin_changed)
 	_on_skin_changed()
+	Sfx.changed.connect(_refresh_sound_text)
+	_refresh_sound_text()
 
 	_difficulty.visible = false
 	_menu_box.visible = true
@@ -64,6 +67,17 @@ func _on_skin_changed() -> void:
 
 
 # ---------------- 外观 ----------------
+
+func _on_toggle_sound() -> void:
+	Sfx.toggle()
+	# 从静音切回有声时补一声，让玩家确认真的开了
+	if Sfx.enabled:
+		Sfx.play("click")
+
+
+func _refresh_sound_text() -> void:
+	%BtnSound.text = "音效开启" if Sfx.enabled else "音效关闭"
+
 
 func _open_theme_picker() -> void:
 	if _picker != null:
