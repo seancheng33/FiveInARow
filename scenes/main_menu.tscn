@@ -12,7 +12,17 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_menu")
 
-[node name="Bg" type="TextureRect" parent="."]
+[node name="Bg" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.99, 0.98, 0.985, 1)
+
+[node name="Art" type="TextureRect" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -21,7 +31,17 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
-stretch_mode = 0
+stretch_mode = 6
+
+[node name="Veil" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 0.98, 0.985, 0.22)
 
 [node name="MenuBox" type="CenterContainer" parent="."]
 unique_name_in_owner = true
@@ -37,14 +57,16 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="MenuBox/Box"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 52
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 92
 text = "五子棋"
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="MenuBox/Box"]
 layout_mode = 2
-theme_type_variation = &"MutedLabel"
+theme_type_variation = &"SubtleLabel"
 theme_override_font_sizes/font_size = 15
 text = "GOMOKU · 单机对战"
 horizontal_alignment = 1
@@ -104,8 +126,9 @@ layout_mode = 2
 text = "退出游戏"
 
 [node name="Version" type="Label" parent="MenuBox/Box"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"MutedLabel"
+theme_type_variation = &"SubtleLabel"
 theme_override_font_sizes/font_size = 13
 text = "v2.1 · Godot 4.2 · 单机人机对战"
 horizontal_alignment = 1
@@ -121,13 +144,14 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Dim" type="ColorRect" parent="Difficulty"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.55)
+color = Color(0.98, 0.96, 0.96, 0.62)
 
 [node name="Center" type="CenterContainer" parent="Difficulty"]
 layout_mode = 1
@@ -148,49 +172,48 @@ theme_override_constants/separation = 12
 [node name="DiffTitle" type="Label" parent="Difficulty/Center/Card/Box"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
-text = "选择 AI 难度"
+text = "选择难度"
 horizontal_alignment = 1
 
-[node name="BtnEasy" type="Button" parent="Difficulty/Center/Card/Box"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
+[node name="DiffSub" type="Label" parent="Difficulty/Center/Card/Box"]
 layout_mode = 2
-text = "简单 · 随机乱下"
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 13
+text = "五档 = 五层搜索，算得越深越慢"
+horizontal_alignment = 1
 
-[node name="BtnNormal" type="Button" parent="Difficulty/Center/Card/Box"]
+[node name="BtnLv0" type="Button" parent="Difficulty/Center/Card/Box"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-text = "普通 · 会堵五连"
+text = "入门 · 1 层 · 只看眼前一手"
 
-[node name="BtnHard" type="Button" parent="Difficulty/Center/Card/Box"]
+[node name="BtnLv1" type="Button" parent="Difficulty/Center/Card/Box"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-text = "困难 · 会算后手"
+text = "简单 · 2 层 · 会算两步"
+
+[node name="BtnLv2" type="Button" parent="Difficulty/Center/Card/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "普通 · 3 层 · 会做杀棋（约 0.5 秒）"
+
+[node name="BtnLv3" type="Button" parent="Difficulty/Center/Card/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "困难 · 4 层 · 每步约 6 秒"
+
+[node name="BtnLv4" type="Button" parent="Difficulty/Center/Card/Box"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "专家 · 5 层 · 每步约 15 秒"
 
 [node name="Sep" type="HSeparator" parent="Difficulty/Center/Card/Box"]
 layout_mode = 2
-
-[node name="DepthRow" type="HBoxContainer" parent="Difficulty/Center/Card/Box"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="DepthLabel" type="Label" parent="Difficulty/Center/Card/Box/DepthRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.66, 0.72, 0.79, 1)
-theme_override_font_sizes/font_size = 15
-text = "困难档搜索层数"
-
-[node name="DepthSpacer" type="Control" parent="Difficulty/Center/Card/Box/DepthRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="DepthOption" type="OptionButton" parent="Difficulty/Center/Card/Box/DepthRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(190, 40)
-layout_mode = 2
-fit_to_longest_item = false
 
 [node name="BtnBackToMenu" type="Button" parent="Difficulty/Center/Card/Box"]
 unique_name_in_owner = true

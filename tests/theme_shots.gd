@@ -63,7 +63,7 @@ func run() -> void:
 			await get_tree().process_frame
 
 		# 真实人机对局：玩家执黑走三步，困难档 AI 应答
-		menu._start_game(1, 2, false)
+		menu._start_game(1, Difficulty.DEFAULT, false)
 		await get_tree().process_frame
 		var board = menu._board
 		board.min_think_ms = 0

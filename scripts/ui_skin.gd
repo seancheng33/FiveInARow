@@ -8,6 +8,11 @@ signal changed
 
 const SAVE_PATH := "user://settings.cfg"
 
+# 主菜单标题用的行楷（马善政毛笔行楷，SIL OFL 1.1，可免费商用）
+const TITLE_FONT_PATH := "res://assets/fonts/MaShanZheng-Regular.ttf"
+# 主菜单国画背景
+const ART_PATH := "res://assets/art/bg_shanshui.png"
+
 var current_id := UiPalette.DEFAULT_ID
 var palette: Dictionary = {}
 
@@ -15,11 +20,23 @@ var theme: Theme
 var board_style: StyleBoxFlat
 var frame_style: StyleBoxFlat
 
+var _title_font: FontFile = null
+var _btn_font: SystemFont = null
+var _art: Texture2D = null
+
 
 func _ready() -> void:
 	load_saved()
+	_load_fonts()
 	rebuild()
 	apply_to_root()
+
+
+func _load_fonts() -> void:
+	if ResourceLoader.exists(TITLE_FONT_PATH):
+		_title_font = load(TITLE_FONT_PATH) as FontFile
+	if _title_font == null:
+		push_warning("行楷字体缺失：%s，标题回退到系统字体" % TITLE_FONT_PATH)
 
 
 # ---------------- 对外接口 ----------------
@@ -67,6 +84,24 @@ func bg_texture() -> GradientTexture2D:
 	return t
 
 
+# ---------------- 主菜单国画背景 ----------------
+
+func art_texture() -> Texture2D:
+	if _art == null and ResourceLoader.exists(ART_PATH):
+		_art = load(ART_PATH) as Texture2D
+	return _art
+
+
+# 国画是暖白纸色，深色主题要乘上使其沉下去，浅色主题几乎原样
+func art_tint() -> Color:
+	return UiPalette.hex(str(palette.get("art_tint", "#FFFFFFFF")))
+
+
+# 压在国画上的一层主题色薄膜，保证文字永远读得清
+func veil_color() -> Color:
+	return UiPalette.hex(str(palette.get("veil", "#00000000")))
+
+
 # ---------------- 构建 ----------------
 
 func rebuild() -> void:
@@ -95,6 +130,25 @@ func _font() -> Font:
 	return f
 
 
+# 标题：行楷。字形偏小偏细，配大字号才立得住
+func title_font() -> Font:
+	if _title_font != null:
+		return _title_font
+	return _font()
+
+
+# 按键：黑体（中易黑体优先，回退到其它无衬线黑体族）
+func button_font() -> Font:
+	if _btn_font == null:
+		_btn_font = SystemFont.new()
+		_btn_font.font_names = PackedStringArray(
+			["SimHei", "黑体", "Heiti SC", "Microsoft YaHei UI", "Noto Sans SC", "PingFang SC"])
+		_btn_font.antialiasing = TextServer.FONT_ANTIALIASING_GRAY
+		_btn_font.hinting = TextServer.HINTING_LIGHT
+		_btn_font.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_AUTO
+	return _btn_font
+
+
 func _build_theme() -> Theme:
 	var t := Theme.new()
 	t.default_font = _font()
@@ -116,6 +170,12 @@ func _build_theme() -> Theme:
 	focus.draw_center = false
 	t.set_stylebox("focus", "Button", focus)
 
+	# 按键统一黑体
+	var bf := button_font()
+	t.set_font("font", "Button", bf)
+	t.set_font("font", "OptionButton", bf)
+	t.set_font("font", "CheckButton", bf)
+	t.set_font("font", "PopupMenu", bf)
 	t.set_color("font_color", "Button", color("btn_text"))
 	t.set_color("font_hover_color", "Button", color("btn_text"))
 	t.set_color("font_pressed_color", "Button", color("btn_text"))
@@ -128,6 +188,7 @@ func _build_theme() -> Theme:
 	t.set_stylebox("normal", "AccentButton", _flat(accent, accent, 0, rb))
 	t.set_stylebox("hover", "AccentButton", _flat(accent.lightened(0.1), accent.lightened(0.1), 0, rb))
 	t.set_stylebox("pressed", "AccentButton", _flat(accent.darkened(0.12), accent, 0, rb))
+	t.set_font("font", "AccentButton", bf)
 	t.set_color("font_color", "AccentButton", accent_text)
 	t.set_color("font_hover_color", "AccentButton", accent_text)
 	t.set_color("font_pressed_color", "AccentButton", accent_text)
@@ -135,8 +196,23 @@ func _build_theme() -> Theme:
 	# 标签
 	t.set_color("font_color", "Label", text)
 
+	# 大标题：行楷。主菜单压在国画上，加一层反向柔影才浮得起来
+	t.set_type_variation("TitleLabel", "Label")
+	t.set_font("font", "TitleLabel", title_font())
+	t.set_color("font_color", "TitleLabel", text)
+	var is_dark := color("bg_top").get_luminance() < 0.5
+	t.set_color("font_shadow_color", "TitleLabel",
+		Color(1, 1, 1, 0.55) if not is_dark else Color(0, 0, 0, 0.45))
+	t.set_constant("shadow_offset_x", "TitleLabel", 0)
+	t.set_constant("shadow_offset_y", "TitleLabel", 2)
+	t.set_constant("shadow_outline_size", "TitleLabel", 2)
+
 	t.set_type_variation("MutedLabel", "Label")
 	t.set_color("font_color", "MutedLabel", muted)
+
+	# 主菜单的副标题/版本号直接压在国画上，比 muted 再深一档才看得清
+	t.set_type_variation("SubtleLabel", "Label")
+	t.set_color("font_color", "SubtleLabel", muted.lerp(text, 0.55))
 
 	t.set_type_variation("AccentLabel", "Label")
 	t.set_color("font_color", "AccentLabel", accent)

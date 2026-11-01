@@ -15,6 +15,7 @@ func _ready() -> void:
 	await run_flow()
 	await run_gui_layout()
 	run_theme()
+	run_art_font()
 	print("")
 	print("=== SUMMARY: passed=%d / total=%d, failed=%d ===" % [passed, total, failed])
 	for n in failed_names:
@@ -241,14 +242,15 @@ func run_ai() -> void:
 			wins += 1
 	check("困难档全胜随机档", wins == games, "胜 %d/%d" % [wins, games])
 
-	print("[14] 棋力：困难档 vs 普通档（4 番，黑先各半，生产预算 650ms）")
+	print("[14] 档位阶梯：困难(4 层) vs 入门(1 层)，4 番，预算 500ms")
 	var wins2 := 0
 	var games2 := 4
 	for i in range(games2):
-		var r := play_match("AdvancedAI", "DefensiveAI", i % 2 == 0)
+		var r := play_levels(4, 1, i % 2 == 0, 500)
 		if r == 1:
 			wins2 += 1
-	check("困难档强于普通档（>=3/4）", wins2 >= 3, "胜 %d/%d" % [wins2, games2])
+	check("困难档强于入门档（>=3/4）", wins2 >= 3, "胜 %d/%d" % [wins2, games2])
+
 
 	print("[15] AI 耗时")
 	var timing := {"RandomAI": 0, "DefensiveAI": 0, "AdvancedAI": 0}
@@ -271,6 +273,37 @@ func make_ai(name: String):
 		"DefensiveAI": return DefensiveAI.new()
 		"AdvancedAI": return AdvancedAI.new()
 	return RandomAI.new()
+
+
+# 指定层数的 AdvancedAI —— 五档就是"同一引擎、不同层数"，这才是要验证的阶梯
+func ai_at(depth: int, budget: int) -> AdvancedAI:
+	var ai := AdvancedAI.new()
+	ai.search_depth = depth
+	ai.time_budget_ms = budget
+	return ai
+
+
+# 返回 1=强档赢 2=弱档赢 3=平局 0=异常
+func play_levels(d_strong: int, d_weak: int, strong_black: bool, budget: int) -> int:
+	var ab = ai_at(d_strong if strong_black else d_weak, budget)
+	var aw = ai_at(d_weak if strong_black else d_strong, budget)
+	var g := GameCore.new()
+	var guard := 0
+	while g.is_playing() and guard < 300:
+		guard += 1
+		var ai = ab if g.turn == GameCore.BLACK else aw
+		var mv: Vector2i = ai.get_next_move(g.snapshot(), g.turn)
+		if not g.place(mv.x, mv.y):
+			return 0
+	var winner := 0
+	if g.state == GameCore.State.BLACK_WIN:
+		winner = 1
+	elif g.state == GameCore.State.WHITE_WIN:
+		winner = 2
+	elif g.state == GameCore.State.DRAW:
+		winner = 3
+	var strong_color := 1 if strong_black else 2
+	return 1 if winner == strong_color else winner
 
 
 # 返回 1=黑胜 2=白胜 3=平局 0=异常
@@ -365,7 +398,15 @@ func run_flow() -> void:
 	check("难度面板初始隐藏", menu._difficulty.visible == false)
 	check("菜单可见", menu._menu_box.visible == true)
 	check("双人对战入口已隐藏", menu.get_node("%BtnPVP").visible == false)
-	check_eq("层数下拉 4 档", menu._depth_option.item_count, 4)
+	check_eq("难度分五档", menu.difficulty_button_count(), 5)
+	check_eq("入门档 = 1 层", Difficulty.depth_of(0), 1)
+	check_eq("专家档 = 5 层", Difficulty.depth_of(4), 5)
+	check_eq("默认档是普通", Difficulty.name_of(Difficulty.DEFAULT), "普通")
+	check("难度按钮文案带层数", (menu.get_node("%BtnLv2") as Button).text.contains("3 层"),
+		(menu.get_node("%BtnLv2") as Button).text)
+	check("主菜单挂了国画背景", menu._art.texture != null)
+	check("国画层可见", menu._art.visible)
+	check("国画层按主题染色", menu._art.modulate.a > 0.0)
 	check("外观弹窗默认关闭", menu._picker.visible == false)
 	menu._open_theme_picker()
 	await get_tree().process_frame
@@ -468,6 +509,23 @@ func run_flow() -> void:
 		await get_tree().process_frame
 	check("困难档侧栏显示实际层数", board._depth_label.text.contains("层"), board._depth_label.text)
 	check_eq("层数为 2", board._last_ai_depth, 2)
+	check("侧栏模式栏带难度名", board._mode_label.text.contains("普通"), board._mode_label.text)
+
+	# 入门档：只有一层，走子要快且合法
+	menu._start_game(1, 0, false)
+	await get_tree().process_frame
+	board = menu._board
+	board.min_think_ms = 0
+	check_eq("入门档深度 1", board.search_depth, 1)
+	board._on_cell_clicked(Vector2i(7, 7))
+	var ge := 0
+	while board.core.move_count() < 2 and ge < 600:
+		ge += 1
+		await get_tree().process_frame
+	check("入门档也能正常应招", board.core.move_count() == 2, "手数 %d" % board.core.move_count())
+	check("入门档侧栏显示难度名", board._mode_label.text.contains("入门"), board._mode_label.text)
+	check_eq("入门档实际层数记为 1", board._last_ai_depth, 1)
+	check_eq("入门档侧栏层数文案", board._depth_label.text, "1 层")
 
 	print("[18] 结束面板与返回菜单")
 	menu._start_game(0, 0, false)
@@ -547,6 +605,32 @@ func run_theme() -> void:
 	check("重新读取能恢复主题", Ui.current_id == "b_warmwood")
 
 	Ui.set_theme(original, true)
+
+
+# ================= 4b. 背景与字体 =================
+func run_art_font() -> void:
+	print("[21] 国画背景与字体")
+	check("国画背景资源可加载", Ui.art_texture() != null)
+	if Ui.art_texture() != null:
+		check("国画背景尺寸够大", Ui.art_texture().get_width() >= 1200,
+			"%dx%d" % [Ui.art_texture().get_width(), Ui.art_texture().get_height()])
+
+	check("行楷标题字体是 FontFile", Ui.title_font() is FontFile)
+	check("行楷字体有中文字形", Ui.title_font().has_char("棋".unicode_at(0)))
+
+	var bf := Ui.button_font() as SystemFont
+	check("按键字体是黑体族", bf != null and bf.font_names.size() > 0 and bf.font_names[0] == "SimHei",
+		str(bf.font_names) if bf != null else "null")
+	check("主题给 Button 挂了黑体", Ui.theme.get_font("font", "Button") == Ui.button_font())
+	check("主题给 OptionButton 挂了黑体", Ui.theme.get_font("font", "OptionButton") == Ui.button_font())
+	check("标题变体用行楷", Ui.theme.get_font("font", "TitleLabel") == Ui.title_font())
+
+	# 每套主题都能给出背景染色与薄膜
+	for p in UiPalette.all():
+		var tint := UiPalette.hex(str(p.get("art_tint", "")))
+		var veil := UiPalette.hex(str(p.get("veil", "")))
+		check("%s 有国画染色" % p["id"], tint.a > 0.0)
+		check("%s 有背景薄膜" % p["id"], veil.a > 0.0)
 
 
 # ================= 5. 结构检查（像素级验证放在 GUI 驱动里做） =================

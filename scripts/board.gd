@@ -33,7 +33,7 @@ const AI_MIN_THINK_MS := 360
 var core := GameCore.new()
 
 var mode: int = Mode.PVP
-var difficulty := 1
+var difficulty: int = Difficulty.DEFAULT
 var ai_is_black := false
 var search_depth := 3
 var ai_time_budget_ms := 500
@@ -99,12 +99,12 @@ func _apply_setup() -> void:
 	match mode:
 		Mode.PVE:
 			if ai_is_black:
-				_ai_black = _make_ai(difficulty)
+				_ai_black = _make_ai()
 			else:
-				_ai_white = _make_ai(difficulty)
+				_ai_white = _make_ai()
 		Mode.EVE:
-			_ai_black = _make_ai(difficulty)
-			_ai_white = _make_ai(difficulty)
+			_ai_black = _make_ai()
+			_ai_white = _make_ai()
 	core.reset()
 	_reset_clock()
 	_last_ai_depth = 0
@@ -114,17 +114,12 @@ func _apply_setup() -> void:
 	_maybe_start_ai()
 
 
-func _make_ai(diff: int) -> AIBase:
-	var ai: AIBase
-	match diff:
-		0:
-			ai = RandomAI.new()
-		2:
-			ai = AdvancedAI.new()
-			ai.search_depth = search_depth
-			ai.time_budget_ms = ai_time_budget_ms
-		_:
-			ai = DefensiveAI.new()
+# 五档难度共用同一个引擎，只有搜索层数与时间预算不同：
+# 入门 1 层 ≈ 纯棋型评估，专家 5 层 = 迭代加深到五层。
+func _make_ai() -> AIBase:
+	var ai := AdvancedAI.new()
+	ai.search_depth = maxi(1, search_depth)
+	ai.time_budget_ms = ai_time_budget_ms
 	return ai
 
 
@@ -382,21 +377,17 @@ func _update_ui() -> void:
 func _depth_text() -> String:
 	if mode == Mode.PVP:
 		return "—"
-	if difficulty == 2:
-		return "%d 层" % _last_ai_depth if _last_ai_depth > 0 else "—"
-	return "1 层"
+	return "%d 层" % _last_ai_depth if _last_ai_depth > 0 else "—"
 
 
 func _mode_text() -> String:
-	var names: Array[String] = ["简单", "普通", "困难"]
-	var diff_name: String = names[clampi(difficulty, 0, 2)]
+	var diff_name := Difficulty.name_of(difficulty)
 	match mode:
 		Mode.PVP:
 			return "双人对战"
 		Mode.PVE:
 			var who := "黑" if not ai_is_black else "白"
-			var lvl := "· %d 层" % search_depth if difficulty == 2 else ""
-			return "人机对战 · 你执%s · %s%s" % [who, diff_name, lvl]
+			return "人机对战 · 你执%s · %s" % [who, diff_name]
 		Mode.EVE:
 			return "AI 对战 · %s" % diff_name
 	return ""

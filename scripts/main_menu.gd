@@ -4,21 +4,14 @@ extends Control
 
 const BOARD_SCENE := preload("res://scenes/board.tscn")
 
-# 困难档可选层数。预算是按实测填的：3 层≈0.44 s、4 层≈6.1 s、5 层≈15.2 s，
-# 每多一层耗时约 ×6~8，再往上（6 层≈2 分钟）已经不是对局的节奏了。
-const DEPTH_LEVELS := [
-	{"depth": 2, "budget": 150, "label": "2 层 · 秒回"},
-	{"depth": 3, "budget": 600, "label": "3 层 · 约 0.5 秒"},
-	{"depth": 4, "budget": 7000, "label": "4 层 · 约 6 秒"},
-	{"depth": 5, "budget": 17000, "label": "5 层 · 约 15 秒"},
-]
-const DEFAULT_DEPTH_INDEX := 1
-
 @onready var _menu_box: Control = %MenuBox
 @onready var _difficulty: Control = %Difficulty
-@onready var _depth_option: OptionButton = %DepthOption
-@onready var _bg: TextureRect = %Bg
+@onready var _bg: ColorRect = %Bg
+@onready var _art: TextureRect = %Art
+@onready var _veil: ColorRect = %Veil
 @onready var _picker: Control = %ThemePicker
+@onready var _title: Label = %Title
+@onready var _dim: ColorRect = %Dim
 
 var _board: Node = null
 var _pending_mode := 0
@@ -36,13 +29,15 @@ func _ready() -> void:
 	%BtnEVE.pressed.connect(_on_eve)
 	%BtnTheme.pressed.connect(_open_theme_picker)
 	%BtnQuit.pressed.connect(_on_quit)
-
-	%BtnEasy.pressed.connect(_on_difficulty.bind(0))
-	%BtnNormal.pressed.connect(_on_difficulty.bind(1))
-	%BtnHard.pressed.connect(_on_difficulty.bind(2))
 	%BtnBackToMenu.pressed.connect(_hide_difficulty)
 
-	_fill_depth_options()
+	# 五档难度：一个级别一层搜索
+	for i in range(Difficulty.count()):
+		var b := get_node_or_null("%BtnLv" + str(i)) as Button
+		if b != null:
+			b.pressed.connect(_on_difficulty.bind(i))
+			b.text = Difficulty.label_of(i)
+
 	theme = Ui.theme
 	Ui.changed.connect(_on_skin_changed)
 	_on_skin_changed()
@@ -54,7 +49,18 @@ func _ready() -> void:
 
 func _on_skin_changed() -> void:
 	theme = Ui.theme
-	_bg.texture = Ui.bg_texture()
+	_bg.color = Ui.color("bg_top")
+	var art := Ui.art_texture()
+	_art.texture = art
+	_art.visible = art != null
+	_art.modulate = Ui.art_tint()
+	_veil.color = Ui.veil_color()
+	# 难度面板后面的遮罩用主题底色，别拿死黑把国画压成脏灰
+	var scrim := Ui.color("bg_bottom")
+	scrim.a = 0.62
+	_dim.color = scrim
+	if is_instance_valid(_title):
+		_title.modulate = Color(1, 1, 1, 1)
 
 
 # ---------------- 外观 ----------------
@@ -64,25 +70,19 @@ func _open_theme_picker() -> void:
 		_picker.open()
 
 
-# ---------------- 层数下拉 ----------------
-
-func _fill_depth_options() -> void:
-	_depth_option.clear()
-	for lvl in DEPTH_LEVELS:
-		_depth_option.add_item(str(lvl["label"]))
-	_depth_option.select(DEFAULT_DEPTH_INDEX)
-
-
-func _current_level() -> Dictionary:
-	var i := clampi(_depth_option.selected, 0, DEPTH_LEVELS.size() - 1)
-	return DEPTH_LEVELS[i]
+func difficulty_button_count() -> int:
+	var n := 0
+	for i in range(Difficulty.count()):
+		if get_node_or_null("%BtnLv" + str(i)) != null:
+			n += 1
+	return n
 
 
 # ---------------- 模式 ----------------
 
 # 预留：双人对战 / 网络对战入口。联机做好后把 %BtnPVP 的 visible 打开并连到这里即可
 func _on_pvp() -> void:
-	_start_game(0, 0, false)
+	_start_game(0, Difficulty.DEFAULT, false)
 
 
 func _on_pve_player_first() -> void:
@@ -116,10 +116,10 @@ func _on_difficulty(diff: int) -> void:
 
 func _start_game(mode: int, diff: int, ai_first: bool) -> void:
 	_clear_board()
-	var lvl := _current_level()
 	_board = BOARD_SCENE.instantiate()
-	_board.search_depth = int(lvl["depth"])
-	_board.ai_time_budget_ms = int(lvl["budget"])
+	# 难度即层数：一到五层对应入门到专家
+	_board.search_depth = Difficulty.depth_of(diff)
+	_board.ai_time_budget_ms = Difficulty.budget_of(diff)
 	_board.configure(mode, diff, ai_first)
 	_board.return_to_menu.connect(_on_board_return)
 	add_child(_board)

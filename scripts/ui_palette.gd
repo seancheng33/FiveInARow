@@ -1,6 +1,6 @@
 # ui_palette.gd
 # 五套界面配色的唯一数据源。所有颜色都是 "#RRGGBB" 或 "#RRGGBBAA" 字符串，
-# 由 skin.gd 解析成 Color 并构建 Theme / 棋盘样式。
+# 由 ui_skin.gd 解析成 Color 并构建 Theme / 棋盘样式 / 主菜单国画背景的染色。
 class_name UiPalette
 extends RefCounted
 
@@ -66,6 +66,7 @@ static func _build() -> Array:
 			"win": "#E8698B", "scrim": "#2B1A1E1A",
 			"radius_btn": 12, "radius_card": 18, "radius_board": 16,
 			"shadow": "#BE788C4D", "shadow_size": 10,
+			"art_tint": "#FFFFFFF2", "veil": "#FBE6EE5E",
 		},
 		{
 			"id": "b_warmwood",
@@ -86,6 +87,7 @@ static func _build() -> Array:
 			"win": "#E2604A", "scrim": "#3A24152E",
 			"radius_btn": 8, "radius_card": 14, "radius_board": 8,
 			"shadow": "#78503266", "shadow_size": 12,
+			"art_tint": "#FFFFFFF5", "veil": "#FBEFDE52",
 		},
 		{
 			"id": "c_berry",
@@ -106,6 +108,7 @@ static func _build() -> Array:
 			"win": "#FF5F8D", "scrim": "#0B060A24",
 			"radius_btn": 12, "radius_card": 20, "radius_board": 18,
 			"shadow": "#000000B3", "shadow_size": 14,
+			"art_tint": "#8A6274C4", "veil": "#2B18226E",
 		},
 		{
 			"id": "d_washi",
@@ -126,6 +129,7 @@ static func _build() -> Array:
 			"win": "#C0442C", "scrim": "#3A2A2024",
 			"radius_btn": 2, "radius_card": 2, "radius_board": 2,
 			"shadow": "#5A402600", "shadow_size": 0,
+			"art_tint": "#FFFDF4F5", "veil": "#FAF1E04C",
 		},
 		{
 			# 混合款：樱雾的粉色界面 + 暖木的木质棋盘
@@ -147,5 +151,6 @@ static func _build() -> Array:
 			"win": "#E8698B", "scrim": "#2B1A1E1A",
 			"radius_btn": 12, "radius_card": 18, "radius_board": 8,
 			"shadow": "#BE788C4D", "shadow_size": 10,
+			"art_tint": "#FFFFFFF2", "veil": "#FBE6EE5E",
 		},
 	]

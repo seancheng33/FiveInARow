@@ -83,14 +83,14 @@ func run() -> void:
 	await get_tree().process_frame
 	menu = scene.get_node("MainMenu")
 
-	log_line("menu: pvp_visible=%s depth_items=%d" % [
-		str(menu.get_node("%BtnPVP").visible), menu._depth_option.item_count])
+	log_line("menu: pvp_visible=%s difficulty_levels=%d" % [
+		str(menu.get_node("%BtnPVP").visible), menu.difficulty_button_count()])
 	await shot("g1_menu")
 
-	# 人机对战 · 我执黑 → 简单
+	# 人机对战 · 我执黑 → 入门
 	await click_node(menu.get_node("%BtnPVEBlack"))
 	await get_tree().process_frame
-	await click_node(menu.get_node("%BtnEasy"))
+	await click_node(menu.get_node("%BtnLv0"))
 	await get_tree().process_frame
 	board = menu._board
 	log_line("board created=%s mode=%d" % [str(board != null), -1 if board == null else board.mode])

@@ -104,6 +104,10 @@ func get_next_move(board_state: Array, player_type: int) -> Vector2i:
 			last_depth = depth
 		depth += 1
 	last_nodes = _nodes
+	# 迭代加深从 2 层起跳，只做根节点排序的档位（入门）也要算作一层，
+	# 否则界面上"实际层数"会显示成空。
+	if last_depth == 0:
+		last_depth = 1
 
 	return best
 

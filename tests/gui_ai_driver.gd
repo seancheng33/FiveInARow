@@ -84,7 +84,7 @@ func run() -> void:
 	await click_node(menu.get_node("%BtnPVEBlack"))
 	await get_tree().process_frame
 	log_line("difficulty visible=%s" % str(menu._difficulty.visible))
-	await click_node(menu.get_node("%BtnHard"))
+	await click_node(menu.get_node("%BtnLv2"))
 	await get_tree().process_frame
 
 	board = menu._board
